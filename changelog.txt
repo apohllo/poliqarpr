@@ -1,0 +1,11 @@
+0.0.2
+- query result is full blown class
+- source divided into client, excerpt and query resutl
+- specs for client, excerpt and query result
+- name changed to poliqarp
+- namespace changed to POLIQARP
+- default corpus included
+
+0.0.1 
+- initiali implementation
+- synchorous querying for terms
