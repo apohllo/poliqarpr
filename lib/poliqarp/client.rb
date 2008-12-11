@@ -101,75 +101,15 @@ module Poliqarp
       end
     end
 
-    def query(query,options={})
-      page_size = (options[:page_size] || 0)
-      page_index = (options[:page_index] || 1)
-      answers = make_query(query)
-      #talk("GET-COLUMN-TYPES")
-      #rcv_sync
-      result_count = count_results(answers)
-      answer_offset = page_size * (page_index - 1)
-      if page_size > 0
-        answers_limit = answer_offset + page_size > result_count ?  
-          result_count - answer_offset : page_size
+    def find(query,options={})
+      if options[:index]
+        find_one(query, options[:index])
       else
-        answers_limit = result_count
+        find_many(query, options)
       end
-      page_count = if page_size > 0
-                     result_count / page_size + (result_count % page_size > 0 ? 1 : 0)
-                   else
-                     1
-                   end
-      result = QueryResult.new(page_index, page_count,page_size,self,query)
-      if answers_limit > 0
-        talk("GET-RESULTS #{answer_offset} #{answer_offset + answers_limit - 1}") 
-        # R OK              1
-        #                   = 1
-        rcv_sync
-        answers_limit.times do |answer_index|
-          # R left_context    + 1
-          rcv_sync
-          # seg_1             + left_context
-          # seg_2
-          # ...
-          # seg_n
-          #                   = 1 + left_context
-          answer = Excerpt.new(answer_offset + answer_index, self, query)
-          result << answer
-          left_context = []
-          @left_context.times do |segment_index|
-            left_context << read_word
-          end
-          answer << left_context.join("")
-          # R 1 (?)           + 1
-          rcv_sync
-          # seg_1             + 1
-          answer << read_word
-          # R 1               + 1
-          #rcv_sync
-          # seg_1[base]       + 1
-          #                   = 4
-          #rcv_sync
-          # R right_context   + 1
-          rcv_sync
-          # seg_1             + right_context
-          # seg_2
-          # ...
-          # seg_n             = right_context + 1
-          right_context = []
-          @right_context.times do |segment_index|
-            right_context << read_word
-          end
-          answer << right_context.join("")
-        end
-        #                   = 1 + answer_limit * (1+left_context + 4 + 1 + right_context) 
-        #(1 + answers_limit * (6 + @right_context + @left_context)).
-        #  times {|i| rcv_sync}
-      end
-      result 
     end
 
-    alias find query
+    alias query find 
 
     def count(query)
       count_results(make_query(query)) 
@@ -208,7 +148,85 @@ module Poliqarp
       result
     end
 
-    protected
+protected
+    def find_many(query, options)
+      page_size = (options[:page_size] || 0)
+      page_index = (options[:page_index] || 1)
+      answers = make_query(query)
+      #talk("GET-COLUMN-TYPES")
+      #rcv_sync
+      result_count = count_results(answers)
+      answer_offset = page_size * (page_index - 1)
+      if page_size > 0
+        answers_limit = answer_offset + page_size > result_count ?  
+          result_count - answer_offset : page_size
+      else
+        answers_limit = result_count
+      end
+      page_count = if page_size > 0
+                     result_count / page_size + (result_count % page_size > 0 ? 1 : 0)
+                   else
+                     1
+                   end
+      result = QueryResult.new(page_index, page_count,page_size,self,query)
+      if answers_limit > 0
+        talk("GET-RESULTS #{answer_offset} #{answer_offset + answers_limit - 1}") 
+        # R OK              1
+        rcv_sync
+
+        answers_limit.times do |answer_index|
+          result << fetch_result(answer_offset + answer_index, query)
+        end
+      end
+      result 
+    end
+
+    def find_one(query,index)
+      make_query(query)
+      talk("GET-RESULTS #{index} #{index}") 
+      fetch_result(index,query) 
+    end
+
+    # Fetches one result of the query
+    #
+    # MAKE-QUERY and GET-RESULTS must be called on server before 
+    # this method is called
+    def fetch_result(index, query)
+      # R left_context    + 1
+      rcv_sync
+      # seg_1             + left_context
+      # seg_2
+      # ...
+      # seg_n
+      #                   = 1 + left_context
+      result = Excerpt.new(index, self, query)
+      left_context = []
+      @left_context.times do |segment_index|
+        left_context << read_word
+      end
+      result << left_context.join("")
+      # R 1 (?)           + 1
+      rcv_sync
+      # seg_1             + 1
+      result << read_word
+      # R 1               + 1
+      #rcv_sync
+      # seg_1[base]       + 1
+      #                   = 4
+      #rcv_sync
+      # R right_context   + 1
+      rcv_sync
+      # seg_1             + right_context
+      # seg_2
+      # ...
+      # seg_n             = right_context + 1
+      right_context = []
+      @right_context.times do |segment_index|
+        right_context << read_word
+      end
+      result << right_context.join("")
+      result
+    end
 
     def count_results(answer)
       answer.split(" ")[2].to_i

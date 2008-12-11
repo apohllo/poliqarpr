@@ -5,6 +5,7 @@
 - name changed to poliqarp
 - namespace changed to POLIQARP
 - default corpus included
+- singular results properly fatched
 
 0.0.1 
 - initiali implementation

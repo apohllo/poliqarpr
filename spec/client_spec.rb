@@ -17,7 +17,7 @@ describe Poliqarp::Client do
     @client.open_corpus(:default)
   end
 
-  describe "(with open corpus)" do
+  describe "(with 'sample' corpus)" do
     before(:each) do
       @client.open_corpus("/home/fox/local/poliqarp/2.sample.30/sample")
     end
@@ -26,12 +26,24 @@ describe Poliqarp::Client do
       @client.find("kot").should_not == nil
     end
 
+    it "should return collection for find without index specified" do
+      @client.find("kot").should respond_to(:[])
+    end
+
     it "should allow to query for term occurences" do
       @client.count("kot").should_not == nil
     end
 
     it "should return 188 occurences of 'kot'" do
       @client.count("kot").should == 188
+    end
+
+    it "should allow to find first occurence of 'kot'" do
+      @client.find("kot",:index => 0).should_not == nil
+    end
+
+    it "should not return collection for find with index specified" do
+      @client.find("nachalny",:index =>0).should_not respond_to(:[])
     end
     
   end
