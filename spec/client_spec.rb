@@ -42,10 +42,19 @@ describe Poliqarp::Client do
       @client.find("kot",:index => 0).should_not == nil
     end
 
-    it "should not return collection for find with index specified" do
-      @client.find("nachalny",:index =>0).should_not respond_to(:[])
+    describe("(with index specified in find)") do
+      before(:each) do 
+        @result = @client.find("nachalny",:index => 0)
+      end
+
+      it "should not return collection for find" do
+        @result.should_not respond_to(:[])
+      end
+
+      it "should fetch the same excerpt as in find without index " do
+        @result.to_s.should == @client.find("nachalny")[0].to_s
+      end
     end
-    
   end
 
 end
