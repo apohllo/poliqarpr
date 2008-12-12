@@ -184,6 +184,8 @@ protected
     def find_one(query,index)
       make_query(query)
       talk("GET-RESULTS #{index} #{index}") 
+      # R OK              1
+      rcv_sync
       fetch_result(index,query) 
     end
 

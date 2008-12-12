@@ -1,3 +1,5 @@
+require 'rake'
+
 Gem::Specification.new do |s|
   s.name = "poliqarp"
   s.version = "0.0.2"
@@ -8,9 +10,9 @@ Gem::Specification.new do |s|
   s.description = "Ruby client for Poliqarp (NLP corpus server)"
   s.has_rdoc = false
   s.authors = ['Aleksander Pohl']
-  s.files = ["Rakefile", "poliqarp.gemspec", 'lib/poliqarp.rb',
+  s.files = FileList["Rakefile", "poliqarp.gemspec", 'lib/poliqarp.rb',
     "changelog.txt", "lib/poliqarp/client.rb", "lib/poliqarp/excerpt.rb",
-    "lib/poliqarp/query_result.rb" ]  
+    "lib/poliqarp/query_result.rb", "corpus/*" ].to_a  
   s.test_files = []
   #s.rdoc_options = ["--main", "README.txt"]
   #s.extra_rdoc_files = ["History.txt", "Manifest.txt", "README.txt"]
