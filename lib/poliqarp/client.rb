@@ -27,6 +27,7 @@ module Poliqarp
       @left_context = 5
       @right_context = 5
       @debug = debug
+      @buffer_size = 500000
       new_session
     end
 
@@ -34,6 +35,8 @@ module Poliqarp
       close if @session
       @socket = TCPSocket.new("localhost",4567)
       talk "MAKE-SESSION #{@session_name}"
+      rcv_sync
+      talk("BUFFER-RESIZE #{@buffer_size}")
       rcv_sync
       @session = true
       self.tags = {}
@@ -220,12 +223,14 @@ protected
     end
 
     def make_query(query)
-      talk("MAKE-QUERY #{query}")
-      rcv_sync
-      talk("BUFFER-RESIZE 500000")
-      rcv_sync
-      talk("RUN-QUERY 500000")
-      rcv_async
+      if @last_query != query
+        @last_query = query
+        talk("MAKE-QUERY #{query}")
+        rcv_sync
+        talk("RUN-QUERY #{@buffer_size}")
+        @last_query_result = rcv_async
+      end
+      @last_query_result 
     end
 
     def read_word

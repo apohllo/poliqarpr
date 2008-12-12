@@ -7,6 +7,7 @@
 - default corpus included
 - singular results properly fatched
 - valid result for queries containing many words
+- same queries which are run in sequence are called only once
 
 0.0.1 
 - initiali implementation

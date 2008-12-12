@@ -61,6 +61,15 @@ describe Poliqarp::Client do
       @client.find("kot",:index => 0).should_not == nil
     end
 
+    it "should return different results for different queries" do
+      @client.find("kot").should_not ==
+        @client.find("kita")
+    end
+
+    it "should return same results for same queries" do
+      @client.find("kita").should == @client.find("kita")
+    end
+
     describe("(with index specified in find)") do
       before(:each) do 
         @result = @client.find("nachalny",:index => 0)

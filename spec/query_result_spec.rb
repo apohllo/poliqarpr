@@ -12,7 +12,7 @@ describe Poliqarp::QueryResult do
 
   describe "(for unspecified query)" do 
     before(:all) do
-      @result = @client.find("kot")
+      @result = @client.find("kita")
     end
 
     it "should not be nil" do
@@ -47,6 +47,10 @@ describe Poliqarp::QueryResult do
 
     it "should allow to call next page" do
       @result.next_page
+    end
+
+    it "should be the same if the query is the same" do
+      @result.should == @client.find("kita")
     end
   end
 

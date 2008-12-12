@@ -2,7 +2,7 @@ module Poliqarp
   class QueryResult
     include Enumerable
 
-    attr_accessor :page, :page_count
+    attr_accessor :page, :page_count, :query, :page_size
 
     def initialize(page, page_count, page_size, client, query)
       @page = page
@@ -29,6 +29,12 @@ module Poliqarp
 
     def [](index)
       @excerpts[index]
+    end
+
+    def ==(other)
+      return false unless other.is_a? QueryResult
+      @page == other.page && @page_count == other.page_count &&
+        @query == other.query && @page_size == other.page_size
     end
 
     def previous_page
