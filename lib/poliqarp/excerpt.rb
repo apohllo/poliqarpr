@@ -1,6 +1,6 @@
 module Poliqarp
   class Excerpt
-    attr_reader :index, :base_form
+    attr_reader :index, :base_form, :short_context
 
     def initialize(index, client, base_form)
       @index = index

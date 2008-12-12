@@ -6,6 +6,7 @@
 - namespace changed to POLIQARP
 - default corpus included
 - singular results properly fatched
+- valid result for queries containing many words
 
 0.0.1 
 - initiali implementation

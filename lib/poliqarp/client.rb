@@ -194,40 +194,25 @@ protected
     # MAKE-QUERY and GET-RESULTS must be called on server before 
     # this method is called
     def fetch_result(index, query)
-      # R left_context    + 1
-      rcv_sync
-      # seg_1             + left_context
-      # seg_2
-      # ...
-      # seg_n
-      #                   = 1 + left_context
       result = Excerpt.new(index, self, query)
-      left_context = []
-      @left_context.times do |segment_index|
-        left_context << read_word
-      end
-      result << left_context.join("")
-      # R 1 (?)           + 1
-      rcv_sync
-      # seg_1             + 1
-      result << read_word
-      # R 1               + 1
-      #rcv_sync
-      # seg_1[base]       + 1
-      #                   = 4
-      #rcv_sync
-      # R right_context   + 1
-      rcv_sync
-      # seg_1             + right_context
-      # seg_2
-      # ...
-      # seg_n             = right_context + 1
-      right_context = []
-      @right_context.times do |segment_index|
-        right_context << read_word
-      end
-      result << right_context.join("")
+      # left_context
+      result << read_segments
+      # matched query
+      result << read_segments
+      # right context
+      result << read_segments
+
       result
+    end
+
+    def read_segments
+      answer = rcv_sync
+      size = answer.match(/\d+/)[0].to_i
+      segments = []
+      size.times do |segment_index|
+        segments << read_word
+      end
+      segments.join("")
     end
 
     def count_results(answer)

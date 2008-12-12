@@ -1,29 +1,48 @@
 require File.join(File.dirname(__FILE__), '..','lib','poliqarp')
 
 describe Poliqarp::Client do
-  before(:each) do
-    @client = Poliqarp::Client.new("TEST")
-  end
+  describe "(general test)" do
+    before(:each) do
+      @client = Poliqarp::Client.new("TEST")
+    end
+    
+    after(:each) do 
+      @client.close
+    end
   
-  after(:each) do 
-    @client.close
-  end
-
-  it "should allow to open corpus" do
-    @client.open_corpus("/home/fox/local/poliqarp/2.sample.30/sample")
-  end
-
-  it "should allow to open :default corpus" do
-    @client.open_corpus(:default)
+    it "should allow to open corpus" do
+      @client.open_corpus("/home/fox/local/poliqarp/2.sample.30/sample")
+    end
+  
+    it "should allow to open :default corpus" do
+      @client.open_corpus(:default)
+    end
   end
 
   describe "(with 'sample' corpus)" do
-    before(:each) do
+    before(:all) do
+      @client = Poliqarp::Client.new("TEST")
       @client.open_corpus("/home/fox/local/poliqarp/2.sample.30/sample")
     end
 
+    after(:all) do
+      @client.close
+    end
+
     it "should allow to find 'kot'" do 
-      @client.find("kot").should_not == nil
+      @client.find("kot").size.should_not == 0
+    end
+
+    it "should contain 'kot' in query result for [base=kot]" do
+      @client.find("[base=kot]")[0].to_s.should match(/\bkot\b/)
+    end
+
+    it "should allow to find 'Afrodyta [] od" do
+      @client.find("Afrodyta [] od").size.should_not == 0
+    end
+
+    it "should contain 'Afrodyta .* od' for 'Afrodyta [] od' query " do
+      @client.find("Afrodyta [] od")[0].to_s.should match(/Afrodyta .* od/)
     end
 
     it "should return collection for find without index specified" do
