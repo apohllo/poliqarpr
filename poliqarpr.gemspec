@@ -3,7 +3,7 @@ require 'rake'
 Gem::Specification.new do |s|
   s.name = "poliqarpr"
   s.version = "0.0.2"
-  s.date = "2008-11-23"
+  s.date = "2008-12-15"
   s.summary = "Ruby client for Poliqarp"
   s.email = "apohllo@o2.pl"
   s.homepage = "http://www.apohllo.pl/projekty/poliqarpr"

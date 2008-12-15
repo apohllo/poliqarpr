@@ -21,11 +21,11 @@ Natural Language Processing.
 
 == REQUIREMENTS:
 
-Poliqarp server (only c++ implementation http://poliqarp.sourceforge.net/)
+Poliqarp server (only C implementation http://poliqarp.sourceforge.net/)
 
 == INSTALL:
  
-* sudo gem install poliqarpr
+* sudo gem install apohllo-poliqarpr
 
 You need RubyGems 1.2 and the github.com repository to be added to your sources list:
 
