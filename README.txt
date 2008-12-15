@@ -25,11 +25,19 @@ Poliqarp server (only C implementation http://poliqarp.sourceforge.net/)
 
 == INSTALL:
  
-* sudo gem install apohllo-poliqarpr
+You need RubyGems v. 1.2 
 
-You need RubyGems 1.2 and the github.com repository to be added to your sources list:
+* gem -v 
+* 1.2.0 #=> ok
+
+You need the github.com repository to be added to your sources list:
 
 * gem sources -a http://gems.github.com
+
+Then you can type:
+
+* sudo gem install apohllo-poliqarpr
+
 
 == LICENSE:
  
