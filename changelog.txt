@@ -2,12 +2,13 @@
 - query result is full blown class
 - source divided into client, excerpt and query resutl
 - specs for client, excerpt and query result
-- name changed to poliqarp
 - namespace changed to POLIQARP
 - default corpus included
 - singular results properly fatched
 - valid result for queries containing many words
 - same queries which are run in sequence are called only once
+- README.txt included in gem
+- specs included in gem
 
 0.0.1 
 - initiali implementation

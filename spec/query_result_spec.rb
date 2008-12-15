@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__), '..','lib','poliqarp')
+require File.join(File.dirname(__FILE__), '..','lib','poliqarpr')
 
 describe Poliqarp::QueryResult do
   before(:all) do

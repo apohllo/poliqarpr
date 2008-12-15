@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__), '..','lib','poliqarp')
+require File.join(File.dirname(__FILE__), '..','lib','poliqarpr')
 
 describe Poliqarp::Excerpt do
   before(:all) do

@@ -1,6 +1,6 @@
 task :default => [:install]
 
-$gem_name = "poliqarp"
+$gem_name = "poliqarpr"
 
 desc "Build the gem"
 task :build do
