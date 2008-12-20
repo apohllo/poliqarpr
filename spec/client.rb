@@ -83,6 +83,27 @@ describe Poliqarp::Client do
         @result.to_s.should == @client.find("nachalny")[0].to_s
       end
     end
+
+    describe("(with lemmata flags set to true)") do 
+      before(:all) do
+        @client.lemmata = {:left_context => true, :right_context => true,
+          :left_match => true, :right_match => true}
+      end
+
+      it "should allow to find 'kotu'" do 
+        @client.find("kotu").size.should_not == 0
+      end
+
+      it "should contain 'kotu' in query result for 'kotu'" do
+        @client.find("kotu")[0].to_s.should match(/\bkotu\b/)
+      end
+
+      it "should contain 'kot' in lemmatized query result for 'kotu'" do
+        @client.find("kotu")[0].short_context.flatten.
+          map{|e| e.lemmata[0].base_form}.join(" ").should match(/\bkot\b/)
+      end
+
+    end
   end
 
 end

@@ -1,3 +1,9 @@
+0.0.3
+- the license of the corpus included
+- client rdoc documentation 
+- support for lemmata retrieval 
+- excerpt now contains segments instead of strings
+
 0.0.2
 - query result is full blown class
 - source divided into client, excerpt and query resutl

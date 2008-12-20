@@ -1,4 +1,9 @@
+require 'socket'
 module Poliqarp
+  # Author:: Aleksander Pohl (mailto:apohllo@o2.pl)
+  # License:: MIT License
+  #
+  # This class is the implementation of the Poliqarp server client. 
   class Client
     DEFAULT_CORPUS = File.join(File.expand_path(File.dirname(__FILE__)),"..", "..", "corpus", "frek")
     ERRORS = {
@@ -20,8 +25,16 @@ module Poliqarp
       19 =>   "Invalid session option value",
       20 =>   "Invalid sorting criteria"
     }
+    GROUPS = [:left_context, :left_match, :right_match, :right_context]
     attr_writer :debug
 
+
+    # Creates new poliqarp server client. 
+    # 
+    # Parameters:
+    # * +session_name+ the name of the client session. Defaults to "RUBY".
+    # * +debug+ if set to true, all messages sent and received from server
+    #   are printed to standard output. Defaults to false.
     def initialize(session_name="RUBY", debug=false)
       @session_name = session_name
       @left_context = 5
@@ -31,9 +44,14 @@ module Poliqarp
       new_session
     end
 
-    def new_session
+    # Creates new session for the client with the name given in constructor. 
+    # If the session was already opened, it is closed. 
+    #
+    # Parameters: 
+    # * +port+ - the port on which the poliqarpd server is accepting connections (defaults to 4567)
+    def new_session(port=4567)
       close if @session
-      @socket = TCPSocket.new("localhost",4567)
+      @socket = TCPSocket.new("localhost",port)
       talk "MAKE-SESSION #{@session_name}"
       rcv_sync
       talk("BUFFER-RESIZE #{@buffer_size}")
@@ -43,11 +61,7 @@ module Poliqarp
       self.lemmata = {}
     end
 
-    def talk(msg)
-      puts msg if @debug
-      @socket.puts(msg)
-    end
-
+    # Closes the opened connection to the poliqarpd server.
     def close
       #talk "CLOSE"
       #rcv_sync
@@ -57,43 +71,88 @@ module Poliqarp
       @session = false
     end
 
+    # Sets the size of the left short context. It must be > 0
+    #
+    # The size of the left short context is the number 
+    # of segments displayed in the found excerpts left to the
+    # matched segment(s).
     def left_context=(value)
-      if value.is_a? Fixnum
+      if value.is_a? Fixnum && value > 0
         talk "SET left-context-width #{value}" 
         result = rcv_sync 
         @left_context = value if result =~ /^R OK/
+      else
+        raise "Invalid argument: #{value}. It must be fixnum greater than 0."
       end
     end
 
+    # Sets the size of the right short context. It must be > 0
+    #
+    # The size of the right short context is the number 
+    # of segments displayed in the found excerpts right to the
+    # matched segment(s).
     def right_context=(value)
-      if value.is_a? Fixnum
+      if value.is_a? Fixnum && value > 0
         talk "SET right-context-width #{value}"     
         result = rcv_sync 
         @right_context = value if result =~ /^R OK/
+      else
+        raise "Invalid argument: #{value}. It must be fixnum greater than 0."
       end
     end
 
+    # Sets the tags' flags. There are four groups of segments 
+    # which the flags apply for:
+    # * +left_context+
+    # * +left_match+
+    # * +right_match+
+    # * +right_context+
+    #
+    # If the flag for given group is set to true, all segments 
+    # in the group are annotated with grammatical tags. E.g.:
+    #  c.find("kot")
+    #  ...
+    #  "kot" tags: "subst:sg:nom:m2"
+    #
+    # You can pass :all to turn on flags for all groups
     def tags=(options={})
+      options = set_all_flags if options == :all
+      @tag_flags = options
       flags = ""
-      [:left_context_tags, :leftM_tags, 
-        :rightM_tags, :right_context_tags].each do |flag|
+      GROUPS.each do |flag|
         flags << (options[flag] ? "1" : "0")
         end
       talk "SET retrieve-tags #{flags}"
       rcv_sync
     end
 
+    # Sets the lemmatas' flags. There are four groups of segments 
+    # which the flags apply for:
+    # * +left_context+
+    # * +left_match+
+    # * +right_match+
+    # * +right_context+
+    #
+    # If the flag for given group is set to true, all segments 
+    # in the group are returned with the base form of the lemmata. E.g.:
+    #  c.find("kotu")
+    #  ...
+    #  "kotu" base_form: "kot"
+    #
+    # You can pass :all to turn on flags for all groups
     def lemmata=(options={})
+      options = set_all_flags if options == :all
+      @lemmata_flags = options
       flags = ""
-      [:left_context_lemmata, :leftM_lemmata, 
-        :rightM_lemmata, :right_context_lemmata].each do |flag|
+      GROUPS.each do |flag|
         flags << (options[flag] ? "1" : "0")
         end
       talk "SET retrieve-lemmata #{flags}"
       rcv_sync
     end
 
-
+    # Opens the corpus given as +path+. To open the default
+    # corpus pass +:default+ as the argument. 
     def open_corpus(path)
       if path == :default
         open_corpus(DEFAULT_CORPUS)
@@ -104,6 +163,19 @@ module Poliqarp
       end
     end
 
+    # Send the query to the opened corpus.
+    #
+    # Options:
+    # * +index+ the index of the (only one) result to be returned. The index is relative
+    #   to the beginning of the query result. In normal case you should query the 
+    #   corpus without specifying the index, to see what results are returned.
+    #   Then you can use the index and the same query to retrieve one result. 
+    #   The pair (query, index) is a kind of unique identifier of the excerpt.
+    # * +page_size+ the size of the page of results. If the page size is 0, then
+    #   all results are returned on one page. It is ignored if the +index+ option
+    #   is present. Defaults to 0.
+    # * +page_index+ the index of the page of results (the first page has index 1, not 0). 
+    #   It is ignored if the +index+ option is present. Defaults to 1.
     def find(query,options={})
       if options[:index]
         find_one(query, options[:index])
@@ -114,10 +186,13 @@ module Poliqarp
 
     alias query find 
 
+    # Returns the number of results for given query.
     def count(query)
       count_results(make_query(query)) 
     end
 
+    # Returns the long context of the excerpt which is identified by
+    # given (query, index) pair.
     def context(query,index)
       make_query(query)
       result = []
@@ -135,6 +210,8 @@ module Poliqarp
       result
     end
 
+    # Returns the metadata of the excerpt which is identified by
+    # given (query, index) pair.
     def metadata(query, index)
       make_query(query)
       result = {}
@@ -152,6 +229,13 @@ module Poliqarp
     end
 
 protected
+    # Sends a message directly to the server
+    # * +msg+ the message to send
+    def talk(msg)
+      puts msg if @debug
+      @socket.puts(msg)
+    end
+
     def find_many(query, options)
       page_size = (options[:page_size] || 0)
       page_index = (options[:page_index] || 1)
@@ -193,29 +277,45 @@ protected
     end
 
     # Fetches one result of the query
-    #
+    ##
     # MAKE-QUERY and GET-RESULTS must be called on server before 
     # this method is called
     def fetch_result(index, query)
       result = Excerpt.new(index, self, query)
-      # left_context
-      result << read_segments
-      # matched query
-      result << read_segments
-      # right context
-      result << read_segments
+      result << read_segments(:left_context)
+      result << read_segments(:left_match)
+      # XXX
+      #result << read_segments(:right_match)
+      result << read_segments(:right_context)
 
       result
     end
 
-    def read_segments
-      answer = rcv_sync
-      size = answer.match(/\d+/)[0].to_i
+    def read_segments(group)
+      size = get_number(rcv_sync)
       segments = []
       size.times do |segment_index|
-        segments << read_word
+        segment = Segment.new(read_word)
+        segments << segment 
+        if @lemmata_flags[group] || @tag_flags[group]
+          lemmata_size = get_number(rcv_sync)
+          lemmata_size.times do |lemmata_index| 
+            lemmata = Lemmata.new()
+            if @lemmata_flags[group]
+              lemmata.base_form = read_word
+            end
+            if @tag_flags[group]
+              read_word
+            end
+            segment.lemmata << lemmata
+          end
+        end
       end
-      segments.join("")
+      segments
+    end
+
+    def get_number(str)
+      str.match(/\d+/)[0].to_i
     end
 
     def count_results(answer)
@@ -267,6 +367,13 @@ protected
         puts line if @debug
       end until line =~ /^M/
       line
+    end
+
+private 
+    def set_all_flags
+      options = {}
+      GROUPS.each{|g| options[g] = true}
+      options
     end
   end 
 end

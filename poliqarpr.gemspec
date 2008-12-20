@@ -2,8 +2,8 @@
 
 Gem::Specification.new do |s|
   s.name = "poliqarpr"
-  s.version = "0.0.2"
-  s.date = "2008-12-15"
+  s.version = "0.0.3"
+  s.date = "2008-12-20"
   s.summary = "Ruby client for Poliqarp"
   s.email = "apohllo@o2.pl"
   s.homepage = "http://www.apohllo.pl/projekty/poliqarpr"
@@ -14,6 +14,8 @@ Gem::Specification.new do |s|
     "lib/poliqarpr/client.rb", 
     "lib/poliqarpr/query_result.rb", 
     "lib/poliqarpr/excerpt.rb", 
+    "lib/poliqarpr/lemmata.rb", 
+    "lib/poliqarpr/segment.rb", 
     "README.txt",
     "corpus/frek.cdf",
     "corpus/frek.poliqarp.base1.image",

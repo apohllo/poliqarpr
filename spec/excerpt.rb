@@ -23,8 +23,19 @@ describe Poliqarp::Excerpt do
       @excerpt.base_form.should_not == nil
     end
 
-    it "should allow to add short context" do
-      @excerpt << "abc"
+    it "should contain 3 groups in short context" do
+      @excerpt.short_context.size.should == 3
+    end
+
+    it "should allow to add segment group" do
+      @excerpt << [Poliqarp::Segment.new("abc")]
+    end
+
+
+    it "should contain non empty segments in short context" do
+      @excerpt.short_context.flatten.each do |segment|
+        segment.literal.should_not == nil
+      end
     end
 
     it "should contain the exact form which it was created for" do
@@ -90,6 +101,33 @@ describe Poliqarp::Excerpt do
     it "should have one 'author' set to 'Małgorzata Pamuła'" do
       @excerpt.author.size.should == 1
       @excerpt.author[0].should == "Małgorzata Pamuła"
+    end
+  end
+
+  describe('first result for "kotu" with lemmatization turned on') do
+    before(:all) do 
+      @client.lemmata = :all 
+      @client.open_corpus(:default)
+      @excerpt = @client.find("kotu")[0] 
+    end
+
+    it "should have one lemmata for each segment" do  
+      @excerpt.short_context.each do |group|
+        group.each do |segment|
+          segment.lemmata.size.should == 1
+        end
+      end
+    end
+
+    it "should have non-nil lemmata for each segment" do
+      @excerpt.short_context.flatten.each do |segment|
+        segment.lemmata[0].should_not == nil
+      end
+    end
+
+    it "should contain 'kot' as one of the lemmata" do 
+      @excerpt.short_context.flatten.
+        any?{|s| s.lemmata[0].base_form == "kot"}.should == true
     end
   end
 end
