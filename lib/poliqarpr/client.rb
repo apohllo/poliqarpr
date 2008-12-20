@@ -77,7 +77,7 @@ module Poliqarp
     # of segments displayed in the found excerpts left to the
     # matched segment(s).
     def left_context=(value)
-      if value.is_a? Fixnum && value > 0
+      if correct_context_value?(value) 
         talk "SET left-context-width #{value}" 
         result = rcv_sync 
         @left_context = value if result =~ /^R OK/
@@ -92,7 +92,7 @@ module Poliqarp
     # of segments displayed in the found excerpts right to the
     # matched segment(s).
     def right_context=(value)
-      if value.is_a? Fixnum && value > 0
+      if correct_context_value?(value)
         talk "SET right-context-width #{value}"     
         result = rcv_sync 
         @right_context = value if result =~ /^R OK/
@@ -374,6 +374,10 @@ private
       options = {}
       GROUPS.each{|g| options[g] = true}
       options
+    end
+    
+    def correct_context_value?(value)
+      value.is_a?(Fixnum) && value > 0
     end
   end 
 end

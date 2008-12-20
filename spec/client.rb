@@ -29,6 +29,38 @@ describe Poliqarp::Client do
       @client.close
     end
 
+    it "should allow to set the right context size" do 
+      @client.right_context = 5
+    end
+
+    it "should raise error if the size of right context is not number" do 
+      (proc do 
+        @client.right_context = "a"
+      end).should raise_error(RuntimeError)
+    end
+
+    it "should rais error if the size of right context is less or equal 0" do 
+      (proc do 
+        @client.right_context = 0
+      end).should raise_error(RuntimeError)
+    end
+
+    it "should allow to set the left context size" do 
+      @client.right_context = 5
+    end
+
+    it "should raise error if the size of left context is not number" do 
+      (lambda do 
+        @client.left_context = "a"
+      end).should raise_error(RuntimeError)
+    end
+
+    it "should rais error if the size of left context is less or equal 0" do 
+      (lambda do 
+        @client.left_context = 0
+      end).should raise_error(RuntimeError)
+    end
+
     it "should allow to find 'kot'" do 
       @client.find("kot").size.should_not == 0
     end
