@@ -40,7 +40,15 @@ Then you can type:
 
 * sudo gem install apohllo-poliqarpr
 
+You can install the optional default corpus (warning: it is distributed under
+different license!):
+
+* sudo gem install apohllo-poliqarpr-corpus
+
 == BASIC USAGE: 
+
+(You need the poliqarpr-corpus to be installed for this to work. See the last
+step of installation process).
 
 Require the gem:
 
@@ -85,15 +93,6 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
 CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-== LICENSE OF DEFAULT (INCLUDED) CORPUS 
-
-The Ruby client is distributed with sample corpus ("frek" form
-http://korpus.pl/index.php?page=download) which is distributed on
-the GNU GPL license v 2.0
-http://www.gnu.org/licenses/old-licenses/gpl-2.0.html. 
-If you don't accept the license of the sample corpus, simply  
-remove the corpus directory, from the gem installation directory. 
 
 == FEEDBACK
 

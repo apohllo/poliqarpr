@@ -3,6 +3,8 @@
 - client rdoc documentation 
 - support for lemmata retrieval 
 - excerpt now contains segments instead of strings
+- buffer size setter
+- default corpus moved to separate plugin (sudo gem install apohllo-poliqarpr-corpus)
 
 0.0.2
 - query result is full blown class

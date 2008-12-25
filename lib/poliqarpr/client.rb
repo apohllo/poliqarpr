@@ -5,7 +5,6 @@ module Poliqarp
   #
   # This class is the implementation of the Poliqarp server client. 
   class Client
-    DEFAULT_CORPUS = File.join(File.expand_path(File.dirname(__FILE__)),"..", "..", "corpus", "frek")
     ERRORS = {
       1 =>   "Incorrect number of arguments",
       3 =>   "No session opened",
@@ -26,8 +25,14 @@ module Poliqarp
       20 =>   "Invalid sorting criteria"
     }
     GROUPS = [:left_context, :left_match, :right_match, :right_context]
+
+    # If debug is turned on, the communication between server and client 
+    # is logged to standard output.
     attr_writer :debug
 
+    # The size of the buffer is the maximum number of excerpts which
+    # are returned for single query.
+    attr_writer :buffer_size
 
     # Creates new poliqarp server client. 
     # 
@@ -42,6 +47,14 @@ module Poliqarp
       @debug = debug
       @buffer_size = 500000
       new_session
+    end
+
+    # A hint about uninstalled default corpus gem
+    def self.const_missing(const)
+      if const.to_s =~ /DEFAULT_CORPUS/ 
+        raise "You need to install 'apohllo-poliqarpr-corpus' to use the default corpus"
+      end
+      super
     end
 
     # Creates new session for the client with the name given in constructor. 
