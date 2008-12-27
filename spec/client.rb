@@ -135,6 +135,10 @@ describe Poliqarp::Client do
         @result.should_not respond_to(:[])
       end
 
+      it "should not be nil" do
+        @result.should_not == nil
+      end
+
       it "should fetch the same excerpt as in find without index " do
         @result.to_s.should == @client.find("nachalny")[0].to_s
       end

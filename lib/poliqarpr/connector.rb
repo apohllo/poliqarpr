@@ -1,6 +1,11 @@
 require 'socket'
 
 module Poliqarp
+  # Author:: Aleksander Pohl (mailto:apohllo@o2.pl)
+  # License:: MIT License
+  #
+  # This class hold the TCP connection to the server and is responsible
+  # for dispatching synchronous and asynchronous queries and answers.
   class Connector
 
     # Error messages assigned to error codes
@@ -69,7 +74,9 @@ module Poliqarp
     def read_message
       message = @message_queue.shift
       if message =~ /^ERR/
-        raise RuntimeError.new("Poliqarp Error: "+ERRORS[message.match(/\d+/)[0].to_i])
+        code = message.match(/\d+/)[0].to_i
+        raise JobInProgress.new() if code == 15
+        raise RuntimeError.new("Poliqarp Error: "+ERRORS[code])
       else
         message
       end

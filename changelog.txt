@@ -2,6 +2,7 @@
 - ping/pong diagnostics 
 - server version
 - corpus statistics 
+- implementation of asynchronous protocol (not stable)
 
 
 0.0.3

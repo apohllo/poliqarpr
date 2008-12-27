@@ -31,7 +31,7 @@ module Poliqarp
       new_session
     end
 
-    # A hint about uninstalled default corpus gem
+    # A hint about installation of default corpus gem
     def self.const_missing(const)
       if const.to_s =~ /DEFAULT_CORPUS/ 
         raise "You need to install 'apohllo-poliqarpr-corpus' to use the default corpus"
@@ -54,13 +54,13 @@ module Poliqarp
       self.lemmata = {}
     end
 
-    # Closes the opened connection to the poliqarpd server.
+    # Closes the opened session.
     def close
       talk "CLOSE-SESSION" 
       @session = false
     end
 
-    # Closes opened corpus
+    # Closes the opened corpus.
     def close_corpus
       talk "CLOSE"
     end
@@ -195,9 +195,10 @@ module Poliqarp
 
     # TODO
     def metadata_types
+      raise "Not implemented"
     end
 
-    # The tagset used in the corpus.
+    # Returns the tag-set used in the corpus.
     # It is divided into two groups:
     # * +:categories+ enlists tags belonging to grammatical categories
     #   (each category has a list of its tags, eg. gender: m1 m2 m3 f n,
@@ -296,26 +297,27 @@ protected
       @connector.send(msg, mode, &handler)
     end
 
+    # Make query and retrieve many results. 
+    # * +query+ the query to be sent to the server.
+    # * +options+ see find
     def find_many(query, options)
       page_size = (options[:page_size] || 0)
       page_index = (options[:page_index] || 1)
-      answers = make_query(query)
-      puts "Answer #{answers}" if @debug
-      #talk("GET-COLUMN-TYPES")
-      #rcv_sync
-      result_count = count_results(answers)
+
       answer_offset = page_size * (page_index - 1)
       if page_size > 0
+        result_count = make_async_query(query,answer_offset)
         answers_limit = answer_offset + page_size > result_count ?  
           result_count - answer_offset : page_size
       else
+        # all answers needed -- the call must be synchronous
+        result_count = count_results(make_query(query))
         answers_limit = result_count
       end
-      page_count = if page_size > 0
-                     result_count / page_size + (result_count % page_size > 0 ? 1 : 0)
-                   else
-                     1
-                   end
+
+      page_count = page_size <= 0 ? 1 :
+        result_count / page_size + (result_count % page_size > 0 ? 1 : 0)
+
       result = QueryResult.new(page_index, page_count,page_size,self,query)
       if answers_limit > 0
         talk("GET-RESULTS #{answer_offset} #{answer_offset + answers_limit - 1}") 
@@ -326,15 +328,18 @@ protected
       result 
     end
 
+    # Make query and retrieve only one result
+    # * +query+ the query to be sent to the server
+    # * +index+ the index of the answer to be retrieved
     def find_one(query,index)
-      make_query(query)
+      make_async_query(query,index)
       talk("GET-RESULTS #{index} #{index}") 
       fetch_result(index,query) 
     end
 
     # Fetches one result of the query
-    ##
-    # MAKE-QUERY and GET-RESULTS must be called on server before 
+    #
+    # MAKE-QUERY and GET-RESULTS must be sent to the server before 
     # this method is called
     def fetch_result(index, query)
       result = Excerpt.new(index, self, query)
@@ -343,18 +348,17 @@ protected
       # XXX
       #result << read_segments(:right_match)
       result << read_segments(:right_context)
-
       result
     end
 
     def read_segments(group)
-      size = get_number()
+      size = read_number()
       segments = []
       size.times do |segment_index|
         segment = Segment.new(read_word)
         segments << segment 
         if @lemmata_flags[group] || @tag_flags[group]
-          lemmata_size = get_number()
+          lemmata_size = read_number()
           lemmata_size.times do |lemmata_index| 
             lemmata = Lemmata.new()
             if @lemmata_flags[group]
@@ -370,29 +374,42 @@ protected
       segments
     end
 
-    def get_number
+    # Reads number stored in the message received from the server.
+    def read_number
       @connector.read_message.match(/\d+/)[0].to_i
     end
 
+    # Counts number of results for given answer
     def count_results(answer)
       answer.split(" ")[1].to_i
     end
 
+    # *Asynchronous* Sends the query to the server
+    # * +query+ query to send
+    # * +handler+ if given, the method returns immediately, 
+    #   and the answer is sent to the handler. In this case
+    #   the result returned by make_query should be IGNORED!
     def make_query(query, &handler)
-      if handler.nil?
-        if @last_query != query
-          @last_query = query
-          handler = lambda { |msg| @answer_queue.push msg }
-          talk("MAKE-QUERY #{query}")
-          talk("RUN-QUERY #{@buffer_size}", :async, &handler) 
-          @last_result = do_wait
+      if @last_query != query
+        @last_query = query
+        if handler.nil?
+          real_handler = lambda { |msg| @answer_queue.push msg }
+        else
+          real_handler = handler
         end
-        @last_result
-      else
-        # TODO
+        begin
+          talk("MAKE-QUERY #{query}")
+        rescue JobInProgress
+          talk("CANCEL") rescue nil
+          talk("MAKE-QUERY #{query}")
+        end
+        talk("RUN-QUERY #{@buffer_size}", :async, &real_handler) 
+        @last_result = do_wait if handler.nil?
       end
+      @last_result
     end
 
+    # Reads string stored in the last message received from server
     def read_word
       @connector.read_message
     end
@@ -415,6 +432,20 @@ private
     
     def correct_context_value?(value)
       value.is_a?(Fixnum) && value > 0
+    end
+
+    def make_async_query(query,answer_offset) 
+      # the handler is empty, since we access the result count through 
+      # BUFFER-STATE call
+      make_query(query){|msg| }
+      result_count = 0 
+      begin 
+        # the result count might be not exact!
+        result_count = talk("BUFFER-STATE").split(" ")[2].to_i
+        talk("STATUS") rescue break
+      end while result_count < answer_offset
+      @last_result = "OK #{result_count}"
+      result_count
     end
   end 
 end

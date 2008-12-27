@@ -1,10 +1,10 @@
-path = File.join(File.dirname(__FILE__), 'poliqarpr')
-require File.join(path, 'client')
-require File.join(path, 'query_result')
-require File.join(path, 'excerpt')
-require File.join(path, 'segment')
-require File.join(path, 'lemmata')
-require File.join(path, 'connector')
+require 'poliqarpr/client'
+require 'poliqarpr/query_result'
+require 'poliqarpr/excerpt'
+require 'poliqarpr/segment'
+require 'poliqarpr/lemmata'
+require 'poliqarpr/connector'
+require 'poliqarpr/exceptions'
 begin
   require 'poliqarpr-corpus' 
 rescue LoadError

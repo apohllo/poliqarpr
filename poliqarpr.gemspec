@@ -15,6 +15,7 @@ Gem::Specification.new do |s|
     "lib/poliqarpr/lemmata.rb", 
     "lib/poliqarpr/segment.rb", 
     "lib/poliqarpr/connector.rb", 
+    "lib/poliqarpr/exceptions.rb", 
     "README.txt",
   ]
   s.test_files = [

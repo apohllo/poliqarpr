@@ -11,8 +11,16 @@ Poliqarpr is Ruby client for Poliqarp server.
 
 * built-in pagination of query results
 * support for lemmatization 
-* asynchronous communication is implemented in synchronous manner 
-* only partial implementation of server protocol
+* asynchronous communication might be not stable (100% CPU ussage)
+* only partial implementation of server protocol:
+** PING, VERSION
+** MAKE-SESSION, CLOSE-SESSION
+** OPEN (corpus), CLOSE (corpus)
+** CORPUS-STATS, GET-TAGSET
+** STATUS, CANCEL (used internally)
+** MAKE-QUERY, RUN-QUERY, BUFFER-STATE (used internally)
+** GET-RESULTS, GET-CONTEXT, METADATA
+** SET: lemmata, tags 
 
 == SYNOPSIS:
 
