@@ -17,6 +17,15 @@ describe Poliqarp::Client do
     it "should allow to open :default corpus" do
       @client.open_corpus(:default)
     end
+
+    it "should respond to :ping" do
+      @client.ping.should == :pong
+    end
+
+    it "should return server version" do
+      @client.version.should_not == nil
+    end
+
   end
 
   describe "(with 'sample' corpus)" do
@@ -59,6 +68,21 @@ describe Poliqarp::Client do
       (lambda do 
         @client.left_context = 0
       end).should raise_error(RuntimeError)
+    end
+
+    it "should return corpus statistics" do
+      stats = @client.stats
+      stats.size.should == 4
+      [:segment_tokens, :segment_types, :lemmata, :tags].each do |type|
+        stats[type].should_not == nil
+        stats[type].should > 0
+      end
+    end
+
+    it "should return the corpus tagset" do
+      tagset = @client.tagset
+      tagset[:categories].should_not == nil
+      tagset[:classes].should_not == nil
     end
 
     it "should allow to find 'kot'" do 

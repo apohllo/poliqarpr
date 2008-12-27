@@ -1,29 +1,9 @@
-require 'socket'
 module Poliqarp
   # Author:: Aleksander Pohl (mailto:apohllo@o2.pl)
   # License:: MIT License
   #
   # This class is the implementation of the Poliqarp server client. 
   class Client
-    ERRORS = {
-      1 =>   "Incorrect number of arguments",
-      3 =>   "No session opened",
-      4 =>   "Cannot create a session for a connection that",
-      5 =>   "Not enough memory",
-      6 =>   "Invalid session ID",
-      7 =>   "Session with this ID is already bound",
-      8 =>   "Session user ID does not match the argument",
-      10 =>   "Session already has an open corpus",
-      12 =>   "System error while opening the corpus",
-      13 =>   "No corpus opened",
-      14 =>   "Invalid job ID",
-      15 =>   "A job is already in progress",
-      16 =>   "Incorrect query",
-      17 =>   "Invalid result range",
-      18 =>   "Incorrect session option",
-      19 =>   "Invalid session option value",
-      20 =>   "Invalid sorting criteria"
-    }
     GROUPS = [:left_context, :left_match, :right_match, :right_context]
 
     # If debug is turned on, the communication between server and client 
@@ -46,6 +26,8 @@ module Poliqarp
       @right_context = 5
       @debug = debug
       @buffer_size = 500000
+      @connector = Connector.new(debug)
+      @answer_queue = Queue.new
       new_session
     end
 
@@ -64,11 +46,9 @@ module Poliqarp
     # * +port+ - the port on which the poliqarpd server is accepting connections (defaults to 4567)
     def new_session(port=4567)
       close if @session
-      @socket = TCPSocket.new("localhost",port)
-      talk "MAKE-SESSION #{@session_name}"
-      rcv_sync
+      @connector.open("localhost",port)
+      talk("MAKE-SESSION #{@session_name}")
       talk("BUFFER-RESIZE #{@buffer_size}")
-      rcv_sync
       @session = true
       self.tags = {}
       self.lemmata = {}
@@ -76,12 +56,13 @@ module Poliqarp
 
     # Closes the opened connection to the poliqarpd server.
     def close
-      #talk "CLOSE"
-      #rcv_sync
       talk "CLOSE-SESSION" 
-      rcv_sync
-      #@socket.close
       @session = false
+    end
+
+    # Closes opened corpus
+    def close_corpus
+      talk "CLOSE"
     end
 
     # Sets the size of the left short context. It must be > 0
@@ -91,8 +72,7 @@ module Poliqarp
     # matched segment(s).
     def left_context=(value)
       if correct_context_value?(value) 
-        talk "SET left-context-width #{value}" 
-        result = rcv_sync 
+        result = talk("SET left-context-width #{value}")
         @left_context = value if result =~ /^R OK/
       else
         raise "Invalid argument: #{value}. It must be fixnum greater than 0."
@@ -106,8 +86,7 @@ module Poliqarp
     # matched segment(s).
     def right_context=(value)
       if correct_context_value?(value)
-        talk "SET right-context-width #{value}"     
-        result = rcv_sync 
+        result = talk("SET right-context-width #{value}")
         @right_context = value if result =~ /^R OK/
       else
         raise "Invalid argument: #{value}. It must be fixnum greater than 0."
@@ -135,8 +114,7 @@ module Poliqarp
       GROUPS.each do |flag|
         flags << (options[flag] ? "1" : "0")
         end
-      talk "SET retrieve-tags #{flags}"
-      rcv_sync
+      talk("SET retrieve-tags #{flags}")
     end
 
     # Sets the lemmatas' flags. There are four groups of segments 
@@ -160,20 +138,86 @@ module Poliqarp
       GROUPS.each do |flag|
         flags << (options[flag] ? "1" : "0")
         end
-      talk "SET retrieve-lemmata #{flags}"
-      rcv_sync
+      talk("SET retrieve-lemmata #{flags}")
     end
 
-    # Opens the corpus given as +path+. To open the default
+    # *Asynchronous* Opens the corpus given as +path+. To open the default
     # corpus pass +:default+ as the argument. 
-    def open_corpus(path)
+    # 
+    # If you don't want to wait until the call is finished, you
+    # have to provide +handler+ for the asynchronous answer.
+    def open_corpus(path, &handler)
       if path == :default
-        open_corpus(DEFAULT_CORPUS)
+        open_corpus(DEFAULT_CORPUS, &handler)
       else
-        talk("OPEN #{path}")
-        rcv_sync
-        rcv_async
+        real_handler = handler || lambda{|msg| @answer_queue.push msg }
+        talk("OPEN #{path}", :async, &real_handler)
+        do_wait if handler.nil?
       end
+    end
+
+    # Server diagnostics -- the result should be :pong
+    def ping 
+      :pong if talk("PING") =~ /PONG/
+    end
+
+    # Returns server version
+    def version 
+      talk("VERSION")
+    end
+
+    # Returns corpus statistics:
+    # * +:segment_tokens+ the number of segments in the corpus 
+    #   (two segments which look exactly the same are counted separately)
+    # * +:segment_types+ the number of segment types in the corpus
+    #   (two segments which look exactly the same are counted as one type)
+    # * +:lemmata+ the number of lemmata (lexemes) types
+    #   (all forms of inflected word, e.g. 'kot', 'kotu', ... 
+    #   are treated as one "word" -- lemmata)
+    # * +:tags+ the number of different grammar tags (each combination
+    #   of atomic tags is treated as different "tag")
+    def stats
+      stats = {}
+      talk("CORPUS-STATS").split.each_with_index do |value, index|
+        case index
+        when 1 
+          stats[:segment_tokens] = value.to_i
+        when 2
+          stats[:segment_types] = value.to_i
+        when 3
+          stats[:lemmata] = value.to_i
+        when 4
+          stats[:tags] = value.to_i
+        end
+      end
+      stats
+    end
+
+    # TODO
+    def metadata_types
+    end
+
+    # The tagset used in the corpus.
+    # It is divided into two groups:
+    # * +:categories+ enlists tags belonging to grammatical categories
+    #   (each category has a list of its tags, eg. gender: m1 m2 m3 f n,
+    #   means that there are 5 genders: masculine(1,2,3), feminine and neuter)
+    # * +:classes+ enlists grammatical tags used to describe it
+    #   (each class has a list of tags used to describe it, eg. adj: degree 
+    #   gender case number, means that adjectives are described in terms
+    #   of degree, gender, case and number)
+    def tagset
+      answer = talk("GET-TAGSET")
+      counters = answer.split
+      result = {}
+      [:categories, :classes].each_with_index do |type, type_index|
+        result[type] = {}
+        counters[type_index+1].to_i.times do |index|
+          values = read_word.split
+          result[type][values[0].to_sym] = values[1..-1].map{|v| v.to_sym}
+        end
+      end
+      result
     end
 
     # Send the query to the opened corpus.
@@ -210,8 +254,6 @@ module Poliqarp
       make_query(query)
       result = []
       talk "GET-CONTEXT #{index}"
-      # R OK
-      rcv_sync
       # 1st part
       result << read_word 
       # 2nd part
@@ -228,11 +270,11 @@ module Poliqarp
     def metadata(query, index)
       make_query(query)
       result = {}
-      talk "METADATA #{index}"
-      count = rcv_sync.split(" ")[2].to_i
+      answer = talk("METADATA #{index}")
+      count = answer.split(" ")[1].to_i
       count.times do |index|
         type = read_word.gsub(/[^a-zA-Z]/,"").to_sym
-        value = rcv_sync[4..-2]
+        value = read_word[2..-1]
         unless value.nil?
           result[type] ||= []
           result[type] << value
@@ -244,15 +286,21 @@ module Poliqarp
 protected
     # Sends a message directly to the server
     # * +msg+ the message to send
-    def talk(msg)
+    # * +mode+ if set to :sync, the method block untli the message
+    #   is received. If :async the method returns immediately.
+    #   Default: :sync
+    # * +handler+ the handler of the assynchronous message. 
+    #   It is ignored when the mode is set to :sync.
+    def talk(msg, mode = :sync, &handler)
       puts msg if @debug
-      @socket.puts(msg)
+      @connector.send(msg, mode, &handler)
     end
 
     def find_many(query, options)
       page_size = (options[:page_size] || 0)
       page_index = (options[:page_index] || 1)
       answers = make_query(query)
+      puts "Answer #{answers}" if @debug
       #talk("GET-COLUMN-TYPES")
       #rcv_sync
       result_count = count_results(answers)
@@ -271,9 +319,6 @@ protected
       result = QueryResult.new(page_index, page_count,page_size,self,query)
       if answers_limit > 0
         talk("GET-RESULTS #{answer_offset} #{answer_offset + answers_limit - 1}") 
-        # R OK              1
-        rcv_sync
-
         answers_limit.times do |answer_index|
           result << fetch_result(answer_offset + answer_index, query)
         end
@@ -284,8 +329,6 @@ protected
     def find_one(query,index)
       make_query(query)
       talk("GET-RESULTS #{index} #{index}") 
-      # R OK              1
-      rcv_sync
       fetch_result(index,query) 
     end
 
@@ -305,13 +348,13 @@ protected
     end
 
     def read_segments(group)
-      size = get_number(rcv_sync)
+      size = get_number()
       segments = []
       size.times do |segment_index|
         segment = Segment.new(read_word)
         segments << segment 
         if @lemmata_flags[group] || @tag_flags[group]
-          lemmata_size = get_number(rcv_sync)
+          lemmata_size = get_number()
           lemmata_size.times do |lemmata_index| 
             lemmata = Lemmata.new()
             if @lemmata_flags[group]
@@ -327,62 +370,43 @@ protected
       segments
     end
 
-    def get_number(str)
-      str.match(/\d+/)[0].to_i
+    def get_number
+      @connector.read_message.match(/\d+/)[0].to_i
     end
 
     def count_results(answer)
-      answer.split(" ")[2].to_i
+      answer.split(" ")[1].to_i
     end
 
-    def make_query(query)
-      if @last_query != query
-        @last_query = query
-        talk("MAKE-QUERY #{query}")
-        rcv_sync
-        talk("RUN-QUERY #{@buffer_size}")
-        @last_query_result = rcv_async
+    def make_query(query, &handler)
+      if handler.nil?
+        if @last_query != query
+          @last_query = query
+          handler = lambda { |msg| @answer_queue.push msg }
+          talk("MAKE-QUERY #{query}")
+          talk("RUN-QUERY #{@buffer_size}", :async, &handler) 
+          @last_result = do_wait
+        end
+        @last_result
+      else
+        # TODO
       end
-      @last_query_result 
     end
 
     def read_word
-      rcv_sync[2..-2]
-    end
-
-    def read_line
-      line = ""
-      begin
-        chars = @socket.recvfrom(1)
-        line << chars[0]
-      end while chars[0] != "\n"
-      line
-    end
-
-    def error_message(line)
-      RuntimeError.new("Poliqarp Error: "+ERRORS[line.match(/\d+/)[0].to_i])
-    end
-
-    # XXX
-    def rcv_sync
-      result = read_line
-      puts result if @debug
-      raise error_message(result) if result =~ /^R ERR/
-      result
-      #    @socket.recvfrom(1024)
-    end
-
-    # XXX
-    def rcv_async
-      begin
-        line = read_line
-        raise error_message(line) if line =~ /^. ERR/
-        puts line if @debug
-      end until line =~ /^M/
-      line
+      @connector.read_message
     end
 
 private 
+    def do_wait
+      loop {
+        status = talk("STATUS") rescue break
+        puts "STATUS: #{status}" if @debug
+        sleep 0.3
+      }
+      @answer_queue.shift
+    end
+
     def set_all_flags
       options = {}
       GROUPS.each{|g| options[g] = true}

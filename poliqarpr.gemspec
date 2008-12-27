@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = "poliqarpr"
-  s.version = "0.0.3"
+  s.version = "0.0.4"
   s.date = "2008-12-20"
   s.summary = "Ruby client for Poliqarp"
   s.email = "apohllo@o2.pl"
@@ -14,6 +14,7 @@ Gem::Specification.new do |s|
     "lib/poliqarpr/excerpt.rb", 
     "lib/poliqarpr/lemmata.rb", 
     "lib/poliqarpr/segment.rb", 
+    "lib/poliqarpr/connector.rb", 
     "README.txt",
   ]
   s.test_files = [

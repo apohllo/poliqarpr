@@ -1,3 +1,9 @@
+0.0.4
+- ping/pong diagnostics 
+- server version
+- corpus statistics 
+
+
 0.0.3
 - the license of the corpus included
 - client rdoc documentation 
