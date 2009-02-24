@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__), '..','lib','poliqarpr')
+require 'lib/poliqarpr'
 
 describe Poliqarp::Client do
   describe "(general test)" do
