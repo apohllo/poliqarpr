@@ -1,3 +1,4 @@
+# vim:encoding=utf-8
 require 'socket'
 
 module Poliqarp
@@ -7,6 +8,7 @@ module Poliqarp
   # This class hold the TCP connection to the server and is responsible
   # for dispatching synchronous and asynchronous queries and answers.
   class Connector
+    include Ruby19
 
     # Error messages assigned to error codes
     # (taken from poliqarpd implementation)
@@ -29,6 +31,8 @@ module Poliqarp
       19 =>   "Invalid session option value",
       20 =>   "Invalid sorting criteria"
     }
+
+    UTF8 = "utf-8"
 
     # Creates new connector
     def initialize(debug)
@@ -61,6 +65,9 @@ module Poliqarp
     # * +handler+ the handler of the asynchronous message
     def send(message, mode, &handler)
       puts "send #{mode} #{message}" if @debug
+      if ruby19?
+        massage = message.encode(UTF8)
+      end
       @socket.puts(message)
       if mode == :async
         @handler = handler
@@ -95,6 +102,9 @@ private
 
     def receive
       result = read_line
+      if ruby19?
+        result.force_encoding(UTF8)
+      end
       msg = result[2..-2]
       if result =~ /^M/
         receive_async(msg)

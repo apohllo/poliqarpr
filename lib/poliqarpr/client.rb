@@ -1,3 +1,4 @@
+# vim:encoding=utf-8
 module Poliqarp
   # Author:: Aleksander Pohl (mailto:apohllo@o2.pl)
   # License:: MIT License

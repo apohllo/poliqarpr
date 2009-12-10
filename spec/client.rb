@@ -1,3 +1,4 @@
+#vim:encoding=utf-8
 require 'lib/poliqarpr'
 
 describe Poliqarp::Client do
