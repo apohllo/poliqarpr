@@ -1,3 +1,10 @@
+0.0.5
+- Bugfix: making parallel query might lead to silent thread death
+- Support for Ruby 1.9 encoding
+- Require path improvments
+- Copyright year correction
+- Documentation now points to gemcutter instead of github
+
 0.0.4
 - ping/pong diagnostics 
 - server version

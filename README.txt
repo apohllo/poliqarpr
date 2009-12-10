@@ -40,18 +40,18 @@ You need RubyGems v. 1.2
 * gem -v 
 * 1.2.0 #=> ok
 
-You need the github.com repository to be added to your sources list:
+You need the gemcutter.org repository to be added to your sources list:
 
-* gem sources -a http://gems.github.com
+* gem sources -a http://gemcutter.org
 
 Then you can type:
 
-* sudo gem install apohllo-poliqarpr
+* sudo gem install poliqarpr
 
 You can install the optional default corpus (warning: it is distributed under
 different license!):
 
-* sudo gem install apohllo-poliqarpr-corpus
+* sudo gem install poliqarpr-corpus
 
 == BASIC USAGE: 
 
