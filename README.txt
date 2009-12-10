@@ -81,7 +81,7 @@ Remember to close the client on exit
  
 (The MIT License)
 
-Copyright (c) 2008 Aleksander Pohl
+Copyright (c) 2008-2009 Aleksander Pohl
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
