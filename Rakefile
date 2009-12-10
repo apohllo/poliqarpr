@@ -9,7 +9,7 @@ end
 
 desc "Install the library at local machnie"
 task :install => :build do 
-  sh "sudo gem install #$gem_name -l"
+  sh "sudo gem install #$gem_name"
 end
 
 desc "Uninstall the library from local machnie"
