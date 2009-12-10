@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.authors = ['Aleksander Pohl']
   s.files = ["Rakefile", "poliqarpr.gemspec", 
     "changelog.txt", "README.txt" ] + Dir.glob("lib/**/*")
-  s.test_files = Dir.glob("test/**/*")
+  s.test_files = Dir.glob("spec/**/*")
   s.rdoc_options = ["--main", "README.txt"]
   s.has_rdoc = true
   s.extra_rdoc_files = ["README.txt"]

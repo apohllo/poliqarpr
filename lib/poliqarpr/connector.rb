@@ -1,5 +1,7 @@
 # vim:encoding=utf-8
 require 'socket'
+require 'thread'
+require File.join(File.dirname(__FILE__),'util')
 
 module Poliqarp
   # Author:: Aleksander Pohl (mailto:apohllo@o2.pl)
