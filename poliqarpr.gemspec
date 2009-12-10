@@ -4,7 +4,7 @@ Gem::Specification.new do |s|
   s.date = "2009-12-10"
   s.summary = "Ruby client for Poliqarp"
   s.email = "apohllo@o2.pl"
-  s.homepage = "http://www.apohllo.pl/"
+  s.homepage = "http://www.github.com/apohllo/poliqarpr"
   s.description = "Ruby client for Poliqarp (NLP corpus server)"
   s.authors = ['Aleksander Pohl']
   s.files = ["Rakefile", "poliqarpr.gemspec", 
