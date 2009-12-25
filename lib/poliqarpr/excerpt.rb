@@ -25,11 +25,25 @@ module Poliqarp
       @short_context << value
     end
 
+    # Returns the matched segments
+    def matched
+      @short_context[1]
+    end
+
+    # Returns the segments of the left short context of the match
+    def left_context
+      @short_context[0]
+    end
+
+    # Returns the segments of the right short context of the match
+    def right_context
+      @short_context[2]
+    end
 
     # Returns the matched query as string 
     def word
       #@short_context[0].split(/\s+/)[-1]
-      @short_context[1].to_s
+      @short_context[1].map{|s| s.to_s}.join("")
     end
 
     alias inflected_form word

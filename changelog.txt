@@ -1,3 +1,8 @@
+0.0.6
+- fix: Excerpt#word - the words consituing the matched query
+- new: Excerpt#matched, Excerpt#right_context Excerpt#left_context 
+  return the matched, right context, left context segments respecively
+
 0.0.5
 - Bugfix: making parallel query might lead to silent thread death
 - Support for Ruby 1.9 encoding
