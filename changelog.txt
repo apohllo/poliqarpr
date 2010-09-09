@@ -1,3 +1,8 @@
+0.0.7
+- QueryResult#to_a method added
+- Lexeme#tags method added
+- fix: README invalid require
+
 0.0.6
 - fix: Excerpt#word - the words consituing the matched query
 - new: Excerpt#matched, Excerpt#right_context Excerpt#left_context 
