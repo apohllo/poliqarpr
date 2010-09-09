@@ -69,5 +69,10 @@ module Poliqarp
       @excerpts.size
     end
 
+    # Converts current query result page into an array.
+    def to_a
+      @excerpts.dup
+    end
+
   end
 end
