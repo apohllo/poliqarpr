@@ -60,7 +60,7 @@ step of installation process).
 
 Require the gem:
 
-  require 'poliaqarpr'
+  require 'poliqarpr'
 
 Create the server client and open default corpus
 
