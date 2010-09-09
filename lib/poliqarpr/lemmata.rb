@@ -4,7 +4,7 @@ module Poliqarp
   #
   # The lemmata contains the base form of the segment
   class Lemmata
-    attr_accessor :base_form
+    attr_accessor :base_form, :tags
     def initialize()
     end
   end

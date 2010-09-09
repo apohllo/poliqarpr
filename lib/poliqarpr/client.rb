@@ -366,7 +366,7 @@ protected
               lemmata.base_form = read_word
             end
             if @tag_flags[group]
-              read_word
+              lemmata.tags = read_word
             end
             segment.lemmata << lemmata
           end
