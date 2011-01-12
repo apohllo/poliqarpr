@@ -1,5 +1,6 @@
 #vim:encoding=utf-8
-require 'lib/poliqarpr'
+$:.unshift("lib")
+require 'poliqarpr'
 
 describe Poliqarp::Client do
   describe "(general test)" do

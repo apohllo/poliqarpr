@@ -1,5 +1,6 @@
 #vim:encoding=utf-8
-require File.join(File.dirname(__FILE__), '..','lib','poliqarpr')
+$:.unshift("lib")
+require 'poliqarpr'
 
 describe Poliqarp::Excerpt do
   before(:all) do
