@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name = "poliqarpr"
-  s.version = "0.0.7"
-  s.date = "2009-12-10"
+  s.version = "0.0.8"
+  s.date = "2011-01-12"
   s.summary = "Ruby client for Poliqarp"
   s.email = "apohllo@o2.pl"
   s.homepage = "http://www.github.com/apohllo/poliqarpr"
