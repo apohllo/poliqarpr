@@ -1,3 +1,6 @@
+0.0.8
+- Speed optimization: socket puts changed to write
+
 0.0.7
 - QueryResult#to_a method added
 - Lexeme#tags method added

@@ -76,6 +76,8 @@ Remember to close the client on exit
   
   client.close
 
+NOTE: If you wish to run the specs, you need the 'default' and '2.sample.30'
+corpuses.
 
 == LICENSE:
  

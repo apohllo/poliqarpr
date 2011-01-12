@@ -17,6 +17,10 @@ describe Poliqarp::Excerpt do
       @excerpt = @client.find("kot").first
     end
 
+    after(:all) do
+      @client.close_corpus
+    end
+
     it "should have index" do
       @excerpt.index.should_not == nil
     end
@@ -49,10 +53,14 @@ describe Poliqarp::Excerpt do
     end
   end
 
-  describe "(first exceprt for 'kot' in 'sample' corpus)" do
+  describe "(first exceprt for 'mu za to astronomiczną' in 'sample' corpus)" do
     before(:all) do
       @client.open_corpus("/home/fox/local/poliqarp/2.sample.30/sample")
-      @excerpt = @client.find("kot").first
+      @excerpt = @client.find("mu za to astronomiczną").first
+    end
+
+    after(:all) do
+      @client.close_corpus
     end
 
     it "should have index set to 0" do
@@ -60,7 +68,7 @@ describe Poliqarp::Excerpt do
     end
 
     it "should have base form set to 'kot'" do 
-      @excerpt.base_form.should == "kot"
+      @excerpt.base_form.should == "mu za to astronomiczną"
     end
 
     it "should have 'kot' as inflected form  " do
@@ -77,9 +85,8 @@ describe Poliqarp::Excerpt do
     end
 
     it "should have 2 'styles' set to 'naukowo-dydaktyczny' and 'naukowo-humanistyczny'" do
-      @excerpt.style.size.should == 2
+      @excerpt.style.size.should == 1
       @excerpt.style.include?("naukowo-dydaktyczny")
-      @excerpt.style.include?("naukowo-humanistyczny")
     end
 
     it "should have 'date' set to nil" do
@@ -92,17 +99,17 @@ describe Poliqarp::Excerpt do
     
     it "should have one 'publisher' set to 'Wydawnictwo Naukowe Akademii Pedagogicznej'" do
       @excerpt.publisher.size.should == 1
-      @excerpt.publisher[0].should == "Wydawnictwo Naukowe Akademii Pedagogicznej"
+      @excerpt.publisher[0].should == "Wydawnictwo W.A.B."
     end
 
     it "should have one 'title' set to 'Wczesne nauczanie języków obcych. Integracja języka obcego z przedmiotami artystycznymi w młodszych klasach szkoły podstawowej'" do
       @excerpt.title.size.should == 1
-      @excerpt.title[0].should == "Wczesne nauczanie języków obcych. Integracja języka obcego z przedmiotami artystycznymi w młodszych klasach szkoły podstawowej"
+      @excerpt.title[0].should == "Modlitwa o deszcz"
     end
 
     it "should have one 'author' set to 'Małgorzata Pamuła'" do
       @excerpt.author.size.should == 1
-      @excerpt.author[0].should == "Małgorzata Pamuła"
+      @excerpt.author[0].should == "Wojciech Jagielski"
     end
   end
 
