@@ -70,7 +70,8 @@ module Poliqarp
       if ruby19?
         massage = message.encode(UTF8)
       end
-      @socket.puts(message)
+      #@socket.puts(message)
+      @socket.write(message+"\n")
       if mode == :async
         @handler = handler
       end
