@@ -1,3 +1,8 @@
+0.1.0
+- synchronization on ansync call without handler done via internal mutex
+  instead of call to STATUS
+- client config moved to external class
+
 0.0.8
 - Speed optimization: socket puts changed to write
 
@@ -8,7 +13,7 @@
 
 0.0.6
 - fix: Excerpt#word - the words consituing the matched query
-- new: Excerpt#matched, Excerpt#right_context Excerpt#left_context 
+- new: Excerpt#matched, Excerpt#right_context Excerpt#left_context
   return the matched, right context, left context segments respecively
 
 0.0.5
@@ -19,16 +24,16 @@
 - Documentation now points to gemcutter instead of github
 
 0.0.4
-- ping/pong diagnostics 
+- ping/pong diagnostics
 - server version
-- corpus statistics 
+- corpus statistics
 - implementation of asynchronous protocol (not stable)
 
 
 0.0.3
 - the license of the corpus included
-- client rdoc documentation 
-- support for lemmata retrieval 
+- client rdoc documentation
+- support for lemmata retrieval
 - excerpt now contains segments instead of strings
 - buffer size setter
 - default corpus moved to separate plugin (sudo gem install apohllo-poliqarpr-corpus)
@@ -45,6 +50,6 @@
 - README.txt included in gem
 - specs included in gem
 
-0.0.1 
+0.0.1
 - initiali implementation
 - synchorous querying for terms
