@@ -12,7 +12,7 @@ describe Poliqarp::QueryResult do
     @client.close
   end
 
-  describe "(for unspecified query)" do 
+  describe "(for unspecified query)" do
     before(:all) do
       @result = @client.find("kita")
     end
@@ -57,11 +57,11 @@ describe Poliqarp::QueryResult do
   end
 
   describe "(for 'kot' in :default corpus)" do
-    before(:all) do 
+    before(:all) do
       @result = @client.find("kot")
     end
 
-    it "should have size == 6" do 
+    it "should have size == 6" do
       @result.size.should == 6
     end
 
@@ -83,11 +83,11 @@ describe Poliqarp::QueryResult do
   end
 
   describe "(for 'kot' with page_size set to 5 in :default corpus)" do
-    before(:all) do 
+    before(:all) do
       @result = @client.find("kot", :page_size => 5)
     end
 
-    it "should have size == 5" do  
+    it "should have size == 5" do
       @result.size.should == 5
     end
 
@@ -109,11 +109,11 @@ describe Poliqarp::QueryResult do
   end
 
   describe "(next for 'kot' with page_size set to 5 in :default corpus)" do
-    before(:all) do 
+    before(:all) do
       @result = @client.find("kot", :page_size => 5).next_page
     end
 
-    it "should have size == 1" do  
+    it "should have size == 1" do
       @result.size.should == 1
     end
 

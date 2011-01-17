@@ -44,7 +44,7 @@ module Poliqarp
       @debug = debug
     end
 
-    # Opens connection with poliqarp server which runs 
+    # Opens connection with poliqarp server which runs
     # on given +host+ and +port+.
     def open(host,port)
       @socket_mutex.synchronize {
@@ -60,7 +60,7 @@ module Poliqarp
       }
     end
 
-    # Sends message to the poliqarp server. Returns the first synchronous 
+    # Sends message to the poliqarp server. Returns the first synchronous
     # answer of the server.
     # * +message+ the message to send
     # * +mode+ synchronous (+:sync:) or asynchronous (+:async+)
@@ -78,7 +78,7 @@ module Poliqarp
     end
 
     # Retrives one message from the server.
-    # If the message indicates an error, new runtime error 
+    # If the message indicates an error, new runtime error
     # containing the error description is returned.
     def read_message
       message = @message_queue.shift
@@ -93,7 +93,7 @@ module Poliqarp
 
 private
     def main_loop
-      @loop = Thread.new { 
+      @loop = Thread.new {
         loop {
           receive
           # XXX ??? needed
@@ -123,8 +123,8 @@ private
 
     def receive_async(message)
       puts "receive async: #{message}" if @debug
-      Thread.new{ 
-        @handler.call(message) 
+      Thread.new{
+        @handler.call(message)
       }
     end
 

@@ -17,11 +17,11 @@ module Poliqarp
 
     # Sets the size of the left short context. It must be > 0
     #
-    # The size of the left short context is the number 
+    # The size of the left short context is the number
     # of segments displayed in the found excerpts left to the
     # matched segment(s).
     def left_context_size=(value)
-      if correct_context_value?(value) 
+      if correct_context_value?(value)
         @client.send(:left_context=,value)
         @left_context_size = value
       else
@@ -31,7 +31,7 @@ module Poliqarp
 
     # Sets the size of the right short context. It must be > 0
     #
-    # The size of the right short context is the number 
+    # The size of the right short context is the number
     # of segments displayed in the found excerpts right to the
     # matched segment(s).
     def right_context_size=(value)
@@ -43,54 +43,54 @@ module Poliqarp
       end
     end
 
-    # Sets the tags' flags. There are four groups of segments 
+    # Sets the tags' flags. There are four groups of segments
     # which the flags apply for:
     # * +:left_context+
     # * +:left_match+
     # * +:right_match+
     # * +:right_context+
     #
-    # If the flag for given group is present, all segments 
+    # If the flag for given group is present, all segments
     # in the group are annotated with grammatical tags. E.g.:
     #  c.find("kot")
     #  ...
     #  "kot" tags: "subst:sg:nom:m2"
     #
-    # E.g. config.tags = [:left_context] will retrieve tags 
+    # E.g. config.tags = [:left_context] will retrieve tags
     # only for the left context.
     #
     # You can pass :all to turn on flags for all groups, i.e.
     # config.tags = :all will retrieve tags for all groups.
     def tags=(groups)
       if groups == :all
-        @tags = GROUPS.dup 
+        @tags = GROUPS.dup
       else
         @tags = groups
       end
       @client.send(:retrieve_tags, flags_for(@tags))
     end
 
-    # Sets the lemmatas' flags. There are four groups of segments 
+    # Sets the lemmatas' flags. There are four groups of segments
     # which the flags apply for:
     # * +left_context+
     # * +left_match+
     # * +right_match+
     # * +right_context+
     #
-    # If the flag for given group is present, all segments 
+    # If the flag for given group is present, all segments
     # in the group are returned with the base form of the lemmata. E.g.:
     #  c.find("kotu")
     #  ...
     #  "kotu" base_form: "kot"
     #
-    # E.g. config.lemmata = [:left_context] will retrieve lemmata 
+    # E.g. config.lemmata = [:left_context] will retrieve lemmata
     # only for the left context.
     #
     # You can pass :all to turn on flags for all groups, i.e.
     # config.lemmata = :all will retrieve lemmata for all groups.
     def lemmata=(groups)
       if groups == :all
-        @lemmata = GROUPS.dup 
+        @lemmata = GROUPS.dup
       else
         @lemmata = groups
       end

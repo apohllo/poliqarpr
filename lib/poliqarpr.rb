@@ -1,5 +1,5 @@
 begin
-  require 'poliqarpr-corpus' 
+  require 'poliqarpr-corpus'
 rescue LoadError
   # Do nothig, since the default corpus is optional
 end

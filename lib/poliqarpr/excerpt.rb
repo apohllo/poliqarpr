@@ -2,13 +2,13 @@ module Poliqarp
   # Author:: Aleksander Pohl
   # License:: MIT License
   #
-  # The excerpt class is used to store single result of the query, 
+  # The excerpt class is used to store single result of the query,
   # i.e. the excerpt of the corpus which contains the words which
-  # the corpus was queried for. 
+  # the corpus was queried for.
   #
   # The excerpt is divided into groups, which contain segments,
-  # which the texts in the corpus were divided for. 
-  # The first group is the left context, the second -- the matched 
+  # which the texts in the corpus were divided for.
+  # The first group is the left context, the second -- the matched
   # query, and the last -- the right context.
   class Excerpt
     attr_reader :index, :base_form, :short_context
@@ -40,7 +40,7 @@ module Poliqarp
       @short_context[2]
     end
 
-    # Returns the matched query as string 
+    # Returns the matched query as string
     def word
       #@short_context[0].split(/\s+/)[-1]
       @short_context[1].map{|s| s.to_s}.join("")
@@ -54,7 +54,7 @@ module Poliqarp
       @short_context.join("")
     end
 
-    # Returns the long context of the query. 
+    # Returns the long context of the query.
     def context
       return @context unless @context.nil?
       @context = @client.context(@base_form, @index)
@@ -63,7 +63,7 @@ module Poliqarp
     { :medium => :medium, :style => :styl, :date => :data_wydania,
       :city => :miejsce_wydania, :publisher => :wydawca, :title => :tytu,
       :author => :autor}.each do |method, keyword|
-      define_method method do 
+      define_method method do
         self.metadata[keyword]
       end
       end

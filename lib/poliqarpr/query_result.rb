@@ -2,9 +2,9 @@ module Poliqarp
   # Author:: Aleksander Pohl (mailto:apohllo@o2.pl)
   # License:: MIT License
   #
-  # The query result class is used to paginate results of the 
+  # The query result class is used to paginate results of the
   # query. Each query result has information about its context
-  # (the next and previous page). 
+  # (the next and previous page).
   class QueryResult
     include Enumerable
 
@@ -51,16 +51,16 @@ module Poliqarp
     # Returns the previous page of the query result
     def previous_page
       if @page > 1
-        @client.find(@query, :page_size => @page_size, 
-                     :page_index => @page - 1) 
+        @client.find(@query, :page_size => @page_size,
+                     :page_index => @page - 1)
       end
     end
 
     # Return the next page of the query result
     def next_page
       if @page < @page_count
-        @client.find(@query, :page_size => @page_size, 
-                     :page_index => @page + 1) 
+        @client.find(@query, :page_size => @page_size,
+                     :page_index => @page + 1)
       end
     end
 
