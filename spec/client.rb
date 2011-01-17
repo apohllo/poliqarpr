@@ -5,7 +5,7 @@ require 'poliqarpr'
 describe Poliqarp::Client do
   describe "(general test)" do
     before(:each) do
-      @client = Poliqarp::Client.new("TEST")
+      @client = Poliqarp::Client.new("TEST1")
     end
     
     after(:each) do 
@@ -32,7 +32,7 @@ describe Poliqarp::Client do
 
   describe "(with 'sample' corpus)" do
     before(:all) do
-      @client = Poliqarp::Client.new("TEST")
+      @client = Poliqarp::Client.new("TEST2")
       @client.open_corpus("/home/fox/local/poliqarp/2.sample.30/sample")
     end
 

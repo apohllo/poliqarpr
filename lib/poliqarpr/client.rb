@@ -151,9 +151,7 @@ module Poliqarp
       if path == :default
         open_corpus(DEFAULT_CORPUS, &handler)
       else
-        real_handler = handler || lambda{|msg| @answer_queue.push msg }
-        talk("OPEN #{path}", :async, &real_handler)
-        do_wait if handler.nil?
+        talk("OPEN #{path}", :async, &handler)
       end
     end
 
@@ -286,19 +284,62 @@ module Poliqarp
     end
 
 protected
+    # Set the size of the left context.
+    def left_context=(value)
+      result = talk("SET left-context-width #{value}")
+      unless result =~ /^OK/
+        raise "Failed to set left context to #{value}: #{result}"
+      end
+    end
+
+    # Set the size of the right context.
+    def right_context=(value)
+      result = talk("SET right-context-width #{value}")
+      unless result =~ /^OK/
+        raise "Failed to set right context to #{value}: #{result}"
+      end
+    end
+
+    # Sets the 'retrieve-tags' flags.
+    def retrieve_tags(flags)
+      talk("SET retrieve-tags #{flags}")
+    end
+
+    # Sets the 'retrieve-lemmata' flags.
+    def retrieve_lemmata(flags)
+      talk("SET retrieve-lemmata #{flags}")
+    end
+
+
     # Sends a message directly to the server
     # * +msg+ the message to send
     # * +mode+ if set to :sync, the method block untli the message
     #   is received. If :async the method returns immediately.
     #   Default: :sync
-    # * +handler+ the handler of the assynchronous message. 
+    # * +handler+ the handler of the assynchronous message.
     #   It is ignored when the mode is set to :sync.
     def talk(msg, mode = :sync, &handler)
       puts msg if @debug
-      @connector.send(msg, mode, &handler)
+      if mode == :sync
+        @connector.send_message(msg, mode, &handler)
+      else
+        if handler.nil?
+          real_handler = lambda do |msg|
+            @answer_queue.push msg
+            stop_waiting
+          end
+          start_waiting
+        else
+          real_handler = handler
+        end
+        @connector.send_message(msg, mode, &real_handler)
+        if handler.nil?
+          do_wait
+        end
+      end
     end
 
-    # Make query and retrieve many results. 
+    # Make query and retrieve many results.
     # * +query+ the query to be sent to the server.
     # * +options+ see find
     def find_many(query, options)
@@ -393,19 +434,16 @@ protected
     def make_query(query, &handler)
       if @last_query != query
         @last_query = query
-        if handler.nil?
-          real_handler = lambda { |msg| @answer_queue.push msg }
-        else
-          real_handler = handler
-        end
         begin
           talk("MAKE-QUERY #{query}")
         rescue JobInProgress
           talk("CANCEL") rescue nil
           talk("MAKE-QUERY #{query}")
         end
-        talk("RUN-QUERY #{@buffer_size}", :async, &real_handler) 
-        @last_result = do_wait if handler.nil?
+        result = talk("RUN-QUERY #{config.buffer_size}", :async, &handler)
+        if handler.nil?
+          @last_result = result
+        end
       end
       @last_result
     end
@@ -415,35 +453,52 @@ protected
       @connector.read_message
     end
 
-private 
+    private
+    # Wait for the assynchronous answer, if some synchronous query
+    # was sent without handler.
     def do_wait
       loop {
-        status = talk("STATUS") rescue break
-        puts "STATUS: #{status}" if @debug
-        sleep 0.3
+        break unless should_wait?
+        puts "WAITING" if @debug
+        sleep 0.1
       }
       @answer_queue.shift
     end
 
-    def set_all_flags
-      options = {}
-      GROUPS.each{|g| options[g] = true}
-      options
+    # Stop waiting for the ansynchonous answer.
+    def stop_waiting
+      @waiting_mutext.synchronize {
+        @should_wait = false
+      }
+      puts "WAITING stopped" if @debug
     end
-    
-    def correct_context_value?(value)
-      value.is_a?(Fixnum) && value > 0
+
+    # Check if the thread should still wait for the answer.
+    def should_wait?
+      should_wait = nil
+      @waiting_mutext.synchronize {
+        should_wait = @should_wait
+      }
+      should_wait
+    end
+
+    # Start waiting for the answer.
+    def start_waiting
+      @waiting_mutext.synchronize {
+        @should_wait = true
+      }
+      puts "WAITING started" if @debug
     end
 
     def make_async_query(query,answer_offset) 
-      # the handler is empty, since we access the result count through 
-      # BUFFER-STATE call
-      make_query(query){|msg| }
+      start_waiting
+      # we access the result count through BUFFER-STATE call
+      make_query(query){|msg| stop_waiting}
       result_count = 0 
       begin 
         # the result count might be not exact!
         result_count = talk("BUFFER-STATE").split(" ")[2].to_i
-        talk("STATUS") rescue break
+        break unless should_wait?
       end while result_count < answer_offset
       @last_result = "OK #{result_count}"
       result_count

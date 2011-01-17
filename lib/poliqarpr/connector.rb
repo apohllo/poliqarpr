@@ -65,12 +65,11 @@ module Poliqarp
     # * +message+ the message to send
     # * +mode+ synchronous (+:sync:) or asynchronous (+:async+)
     # * +handler+ the handler of the asynchronous message
-    def send(message, mode, &handler)
+    def send_message(message, mode, &handler)
       puts "send #{mode} #{message}" if @debug
       if ruby19?
         massage = message.encode(UTF8)
       end
-      #@socket.puts(message)
       @socket.write(message+"\n")
       if mode == :async
         @handler = handler
