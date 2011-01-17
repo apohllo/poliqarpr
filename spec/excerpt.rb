@@ -25,7 +25,7 @@ describe Poliqarp::Excerpt do
       @excerpt.index.should_not == nil
     end
 
-    it "should have base form" do 
+    it "should have base form" do
       @excerpt.base_form.should_not == nil
     end
 
@@ -64,10 +64,10 @@ describe Poliqarp::Excerpt do
     end
 
     it "should have index set to 0" do
-      @excerpt.index.should == 0 
+      @excerpt.index.should == 0
     end
 
-    it "should have base form set to 'kot'" do 
+    it "should have base form set to 'kot'" do
       @excerpt.base_form.should == "mu za to astronomiczną"
     end
 
@@ -96,7 +96,7 @@ describe Poliqarp::Excerpt do
     it "should have 'city' set to nil" do
       @excerpt.city.should == nil
     end
-    
+
     it "should have one 'publisher' set to 'Wydawnictwo Naukowe Akademii Pedagogicznej'" do
       @excerpt.publisher.size.should == 1
       @excerpt.publisher[0].should == "Wydawnictwo W.A.B."
@@ -114,13 +114,13 @@ describe Poliqarp::Excerpt do
   end
 
   describe('first result for "kotu" with lemmatization turned on') do
-    before(:all) do 
-      @client.lemmata = :all 
+    before(:all) do
+      @client.config.lemmata = :all
       @client.open_corpus(:default)
-      @excerpt = @client.find("kotu")[0] 
+      @excerpt = @client.find("kotu")[0]
     end
 
-    it "should have one lemmata for each segment" do  
+    it "should have one lemmata for each segment" do
       @excerpt.short_context.each do |group|
         group.each do |segment|
           segment.lemmata.size.should == 1
@@ -134,7 +134,7 @@ describe Poliqarp::Excerpt do
       end
     end
 
-    it "should contain 'kot' as one of the lemmata" do 
+    it "should contain 'kot' as one of the lemmata" do
       @excerpt.short_context.flatten.
         any?{|s| s.lemmata[0].base_form == "kot"}.should == true
     end

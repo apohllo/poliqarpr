@@ -7,15 +7,15 @@ describe Poliqarp::Client do
     before(:each) do
       @client = Poliqarp::Client.new("TEST1")
     end
-    
-    after(:each) do 
+
+    after(:each) do
       @client.close
     end
-  
+
     it "should allow to open corpus" do
       @client.open_corpus("/home/fox/local/poliqarp/2.sample.30/sample")
     end
-  
+
     it "should allow to open :default corpus" do
       @client.open_corpus(:default)
     end
@@ -40,35 +40,37 @@ describe Poliqarp::Client do
       @client.close
     end
 
-    it "should allow to set the right context size" do 
-      @client.right_context = 5
+    it "should allow to set and get the right context size" do
+      @client.config.right_context_size = 5
+      @client.config.right_context_size.should == 5
     end
 
-    it "should raise error if the size of right context is not number" do 
-      (proc do 
-        @client.right_context = "a"
+    it "should raise error if the size of right context is not number" do
+      (proc do
+        @client.config.right_context_size = "a"
       end).should raise_error(RuntimeError)
     end
 
-    it "should rais error if the size of right context is less or equal 0" do 
-      (proc do 
-        @client.right_context = 0
+    it "should rais error if the size of right context is less or equal 0" do
+      (proc do
+        @client.config.right_context_size = 0
       end).should raise_error(RuntimeError)
     end
 
-    it "should allow to set the left context size" do 
-      @client.right_context = 5
+    it "should allow to set and get the left context size" do
+      @client.config.left_context_size = 5
+      @client.config.left_context_size.should == 5
     end
 
-    it "should raise error if the size of left context is not number" do 
-      (lambda do 
-        @client.left_context = "a"
+    it "should raise error if the size of left context is not number" do
+      (lambda do
+        @client.config.left_context_size = "a"
       end).should raise_error(RuntimeError)
     end
 
-    it "should rais error if the size of left context is less or equal 0" do 
-      (lambda do 
-        @client.left_context = 0
+    it "should rais error if the size of left context is less or equal 0" do
+      (lambda do
+        @client.config.left_context_size = 0
       end).should raise_error(RuntimeError)
     end
 
@@ -87,7 +89,7 @@ describe Poliqarp::Client do
       tagset[:classes].should_not == nil
     end
 
-    it "should allow to find 'kot'" do 
+    it "should allow to find 'kot'" do
       @client.find("kot").size.should_not == 0
     end
 
@@ -129,7 +131,7 @@ describe Poliqarp::Client do
     end
 
     describe("(with index specified in find)") do
-      before(:each) do 
+      before(:each) do
         @result = @client.find("nachalny",:index => 0)
       end
 
@@ -146,13 +148,12 @@ describe Poliqarp::Client do
       end
     end
 
-    describe("(with lemmata flags set to true)") do 
+    describe("(with lemmata flags set to true)") do
       before(:all) do
-        @client.lemmata = {:left_context => true, :right_context => true,
-          :left_match => true, :right_match => true}
+        @client.config.lemmata = [:left_context, :right_context, :left_match, :right_match]
       end
 
-      it "should allow to find 'kotu'" do 
+      it "should allow to find 'kotu'" do
         @client.find("kotu").size.should_not == 0
       end
 

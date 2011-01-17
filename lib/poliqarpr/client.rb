@@ -5,15 +5,12 @@ module Poliqarp
   #
   # This class is the implementation of the Poliqarp server client. 
   class Client
-    GROUPS = [:left_context, :left_match, :right_match, :right_context]
-
     # If debug is turned on, the communication between server and client 
     # is logged to standard output.
     attr_writer :debug
 
-    # The size of the buffer is the maximum number of excerpts which
-    # are returned for single query.
-    attr_writer :buffer_size
+    # The configuration of the client.
+    attr_reader :config
 
     # Creates new poliqarp server client. 
     # 
@@ -23,13 +20,16 @@ module Poliqarp
     #   are printed to standard output. Defaults to false.
     def initialize(session_name="RUBY", debug=false)
       @session_name = session_name
-      @left_context = 5
-      @right_context = 5
       @debug = debug
-      @buffer_size = 500000
       @connector = Connector.new(debug)
+      @config = Config.new(self,500000)
       @answer_queue = Queue.new
+      @waiting_mutext = Mutex.new
       new_session
+      config.left_context_size = 5
+      config.right_context_size = 5
+      config.tags = []
+      config.lemmata = []
     end
 
     # A hint about installation of default corpus gem
@@ -49,10 +49,8 @@ module Poliqarp
       close if @session
       @connector.open("localhost",port)
       talk("MAKE-SESSION #{@session_name}")
-      talk("BUFFER-RESIZE #{@buffer_size}")
+      talk("BUFFER-RESIZE #{config.buffer_size}")
       @session = true
-      self.tags = {}
-      self.lemmata = {}
     end
 
     # Closes the opened session.
@@ -64,82 +62,6 @@ module Poliqarp
     # Closes the opened corpus.
     def close_corpus
       talk "CLOSE"
-    end
-
-    # Sets the size of the left short context. It must be > 0
-    #
-    # The size of the left short context is the number 
-    # of segments displayed in the found excerpts left to the
-    # matched segment(s).
-    def left_context=(value)
-      if correct_context_value?(value) 
-        result = talk("SET left-context-width #{value}")
-        @left_context = value if result =~ /^R OK/
-      else
-        raise "Invalid argument: #{value}. It must be fixnum greater than 0."
-      end
-    end
-
-    # Sets the size of the right short context. It must be > 0
-    #
-    # The size of the right short context is the number 
-    # of segments displayed in the found excerpts right to the
-    # matched segment(s).
-    def right_context=(value)
-      if correct_context_value?(value)
-        result = talk("SET right-context-width #{value}")
-        @right_context = value if result =~ /^R OK/
-      else
-        raise "Invalid argument: #{value}. It must be fixnum greater than 0."
-      end
-    end
-
-    # Sets the tags' flags. There are four groups of segments 
-    # which the flags apply for:
-    # * +left_context+
-    # * +left_match+
-    # * +right_match+
-    # * +right_context+
-    #
-    # If the flag for given group is set to true, all segments 
-    # in the group are annotated with grammatical tags. E.g.:
-    #  c.find("kot")
-    #  ...
-    #  "kot" tags: "subst:sg:nom:m2"
-    #
-    # You can pass :all to turn on flags for all groups
-    def tags=(options={})
-      options = set_all_flags if options == :all
-      @tag_flags = options
-      flags = ""
-      GROUPS.each do |flag|
-        flags << (options[flag] ? "1" : "0")
-        end
-      talk("SET retrieve-tags #{flags}")
-    end
-
-    # Sets the lemmatas' flags. There are four groups of segments 
-    # which the flags apply for:
-    # * +left_context+
-    # * +left_match+
-    # * +right_match+
-    # * +right_context+
-    #
-    # If the flag for given group is set to true, all segments 
-    # in the group are returned with the base form of the lemmata. E.g.:
-    #  c.find("kotu")
-    #  ...
-    #  "kotu" base_form: "kot"
-    #
-    # You can pass :all to turn on flags for all groups
-    def lemmata=(options={})
-      options = set_all_flags if options == :all
-      @lemmata_flags = options
-      flags = ""
-      GROUPS.each do |flag|
-        flags << (options[flag] ? "1" : "0")
-        end
-      talk("SET retrieve-lemmata #{flags}")
     end
 
     # *Asynchronous* Opens the corpus given as +path+. To open the default
@@ -399,14 +321,14 @@ protected
       size.times do |segment_index|
         segment = Segment.new(read_word)
         segments << segment 
-        if @lemmata_flags[group] || @tag_flags[group]
+        if config.lemmata.include?(group) || config.tags.include?(group)
           lemmata_size = read_number()
           lemmata_size.times do |lemmata_index| 
             lemmata = Lemmata.new()
-            if @lemmata_flags[group]
+            if config.lemmata.include?(group)
               lemmata.base_form = read_word
             end
-            if @tag_flags[group]
+            if config.tags.include?(group)
               lemmata.tags = read_word
             end
             segment.lemmata << lemmata
