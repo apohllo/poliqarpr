@@ -343,6 +343,11 @@ protected
       @connector.read_message.match(/\d+/)[0].to_i
     end
 
+    # Reads string stored in the last message received from server
+    def read_word
+      @connector.read_message
+    end
+
     # Counts number of results for given answer
     def count_results(answer)
       answer.split(" ")[1].to_i
@@ -370,11 +375,6 @@ protected
         stop_waiting
       end
       @last_result
-    end
-
-    # Reads string stored in the last message received from server
-    def read_word
-      @connector.read_message
     end
 
     private
