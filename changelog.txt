@@ -1,3 +1,8 @@
+0.1.1
+- remove messy debug message
+- raise IndexOutOfBounds exception when the excerpt index is larger than the
+  buffer size or is larger than the result count
+
 0.1.0
 - synchronization on ansync call without handler done via internal mutex
   instead of call to STATUS
