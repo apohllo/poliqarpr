@@ -340,9 +340,7 @@ protected
 
     # Reads number stored in the message received from the server.
     def read_number
-      msg = @connector.read_message
-      puts "XXX #{msg}" if @debug
-      msg.match(/\d+/)[0].to_i
+      @connector.read_message.match(/\d+/)[0].to_i
     end
 
     # Counts number of results for given answer
