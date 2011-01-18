@@ -146,6 +146,20 @@ describe Poliqarp::Client do
       it "should fetch the same excerpt as in find without index " do
         @result.to_s.should == @client.find("nachalny")[0].to_s
       end
+
+      it "should raise IndexOutOfBounds if the index is larger than the results count" do
+        count = @client.count("nachalny")
+        (proc do
+          @client.find("nachalny",:index => count+1)
+        end).should raise_error(Poliqarp::IndexOutOfBounds)
+      end
+
+      it "should raise IndexOutOfBounds error if the index is larger than the buffer size" do
+        @client.config.buffer_size = 1
+        (proc do
+          @client.find("nachalny",:index => 2)
+        end).should raise_error(Poliqarp::IndexOutOfBounds)
+      end
     end
 
     describe("(with lemmata flags set to true)") do

@@ -366,6 +366,8 @@ protected
         if handler.nil?
           @last_result = result
         end
+      else
+        stop_waiting
       end
       @last_result
     end
@@ -413,6 +415,7 @@ protected
     end
 
     def make_async_query(query,answer_offset)
+      raise IndexOutOfBounds if answer_offset > config.buffer_size
       start_waiting
       # we access the result count through BUFFER-STATE call
       make_query(query){|msg| stop_waiting}

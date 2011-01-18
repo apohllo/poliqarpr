@@ -84,8 +84,14 @@ module Poliqarp
       message = @message_queue.shift
       if message =~ /^ERR/
         code = message.match(/\d+/)[0].to_i
-        raise JobInProgress.new() if code == 15
-        raise RuntimeError.new("Poliqarp Error: "+ERRORS[code])
+        case code
+        when 15
+          raise JobInProgress.new()
+        when 17
+          raise IndexOutOfBounds.new()
+        else
+          raise RuntimeError.new("Poliqarp Error: "+ERRORS[code])
+        end
       else
         message
       end
