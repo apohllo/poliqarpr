@@ -415,7 +415,7 @@ protected
     end
 
     def make_async_query(query,answer_offset)
-      raise IndexOutOfBounds if answer_offset > config.buffer_size
+      raise IndexOutOfBounds.new(answer_offset) if answer_offset > config.buffer_size
       start_waiting
       # we access the result count through BUFFER-STATE call
       make_query(query){|msg| stop_waiting}

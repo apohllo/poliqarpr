@@ -9,5 +9,14 @@ module Poliqarp
 
   # The IndexOutOfBounds exception is raised if the index of given excerpt
   # is larger than the size of query buffer.
-  class IndexOutOfBounds < Exception; end
+  class IndexOutOfBounds < Exception
+    def initialize(index)
+      super
+      @index = index
+    end
+
+    def to_s
+      "Poliqarp::IndexOutOfBounds(#{@index})"
+    end
+  end
 end

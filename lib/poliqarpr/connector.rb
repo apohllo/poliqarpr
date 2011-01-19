@@ -87,8 +87,6 @@ module Poliqarp
         case code
         when 15
           raise JobInProgress.new()
-        when 17
-          raise IndexOutOfBounds.new()
         else
           raise RuntimeError.new("Poliqarp Error: "+ERRORS[code])
         end
