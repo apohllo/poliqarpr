@@ -1,3 +1,6 @@
+0.1.2
+- IndexOutOfBounds includes info about index
+
 0.1.1
 - remove messy debug message
 - raise IndexOutOfBounds exception when the excerpt index is larger than the
