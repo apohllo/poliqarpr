@@ -1,3 +1,7 @@
+0.1.5
+- Raises exception if failed to open corpus
+- New PoliqarpException class as a base for all Poliqarp exception
+
 0.1.4
 - The logger data is automatically flushed.
 
