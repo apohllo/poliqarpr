@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = "poliqarpr"
-  s.version = "0.1.3"
+  s.version = "0.1.4"
   s.date = Time.now.strftime("%Y-%m-%d")
   s.summary = "Ruby client for Poliqarp"
   s.email = "apohllo@o2.pl"

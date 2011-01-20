@@ -1,3 +1,6 @@
+0.1.4
+- The logger data is automatically flushed.
+
 0.1.3
 - Alternative logger for debug
 
