@@ -6,8 +6,11 @@ module Poliqarp
   # This class is the implementation of the Poliqarp server client.
   class Client
     # If debug is turned on, the communication between server and client
-    # is logged to standard output.
+    # is logged to logger.
     attr_writer :debug
+
+    # Logger used for debugging. STDOUT by default.
+    attr_accessor :logger
 
     # The configuration of the client.
     attr_reader :config
@@ -21,7 +24,8 @@ module Poliqarp
     def initialize(session_name="RUBY", debug=false)
       @session_name = session_name
       @debug = debug
-      @connector = Connector.new(debug)
+      @logger = STDOUT
+      @connector = Connector.new(debug,self)
       @config = Config.new(self,500000)
       @answer_queue = Queue.new
       @waiting_mutext = Mutex.new
@@ -241,7 +245,7 @@ protected
     # * +handler+ the handler of the assynchronous message.
     #   It is ignored when the mode is set to :sync.
     def talk(msg, mode = :sync, &handler)
-      puts msg if @debug
+      logger.puts msg if @debug
       if mode == :sync
         @connector.send_message(msg, mode, &handler)
       else
@@ -383,7 +387,7 @@ protected
     def do_wait
       loop {
         break unless should_wait?
-        puts "WAITING" if @debug
+        logger.puts "WAITING" if @debug
         sleep 0.1
       }
       @answer_queue.shift
@@ -394,7 +398,7 @@ protected
       @waiting_mutext.synchronize {
         @should_wait = false
       }
-      puts "WAITING stopped" if @debug
+      logger.puts "WAITING stopped" if @debug
     end
 
     # Check if the thread should still wait for the answer.
@@ -411,7 +415,7 @@ protected
       @waiting_mutext.synchronize {
         @should_wait = true
       }
-      puts "WAITING started" if @debug
+      logger.puts "WAITING started" if @debug
     end
 
     def make_async_query(query,answer_offset)

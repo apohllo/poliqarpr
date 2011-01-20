@@ -28,6 +28,24 @@ describe Poliqarp::Client do
       @client.version.should_not == nil
     end
 
+    it "should work with debug turned on" do
+      @client.debug = true
+      (proc do 
+        @client.ping
+      end).should_not raise_error(Exception)
+    end
+
+    it "should work with alternative logger" do
+      logger = ""
+      def logger.puts(str)
+        self << str
+      end
+      @client.debug = true
+      @client.logger = logger
+      @client.ping
+      logger.size.should > 0
+    end
+
   end
 
   describe "(with 'sample' corpus)" do

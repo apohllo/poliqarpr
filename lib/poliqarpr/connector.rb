@@ -37,11 +37,12 @@ module Poliqarp
     UTF8 = "utf-8"
 
     # Creates new connector
-    def initialize(debug)
+    def initialize(debug,client)
       @message_queue = Queue.new
       @socket_mutex = Mutex.new
       @loop_mutex = Mutex.new
       @debug = debug
+      @client = client
     end
 
     # Opens connection with poliqarp server which runs
@@ -66,7 +67,7 @@ module Poliqarp
     # * +mode+ synchronous (+:sync:) or asynchronous (+:async+)
     # * +handler+ the handler of the asynchronous message
     def send_message(message, mode, &handler)
-      puts "send #{mode} #{message}" if @debug
+      @client.logger.puts "send #{mode} #{message}" if @debug
       if ruby19?
         massage = message.encode(UTF8)
       end
@@ -121,12 +122,12 @@ private
     end
 
     def receive_sync(message)
-      puts "receive sync: #{message}" if @debug
+      @client.logger.puts "receive sync: #{message}" if @debug
       @message_queue << message
     end
 
     def receive_async(message)
-      puts "receive async: #{message}" if @debug
+      @client.logger.puts "receive async: #{message}" if @debug
       Thread.new{
         @handler.call(message)
       }
