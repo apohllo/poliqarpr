@@ -40,6 +40,8 @@ describe Poliqarp::Client do
       def logger.puts(str)
         self << str
       end
+      def logger.flush
+      end
       @client.debug = true
       @client.logger = logger
       @client.ping

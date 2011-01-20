@@ -25,7 +25,7 @@ module Poliqarp
       @session_name = session_name
       @debug = debug
       @logger = STDOUT
-      @connector = Connector.new(debug,self)
+      @connector = Connector.new(self)
       @config = Config.new(self,500000)
       @answer_queue = Queue.new
       @waiting_mutext = Mutex.new
@@ -66,6 +66,19 @@ module Poliqarp
     # Closes the opened corpus.
     def close_corpus
       talk "CLOSE"
+    end
+
+    # Prints the debug +msg+ to the logger if debugging is turned on.
+    # Accepts both regular message and block with message. The second
+    # form is provided for messages which aren't cheep to build.
+    def debug(msg=nil)
+      if @debug
+        if block_given?
+          msg = yield
+        end
+        logger.puts msg
+        logger.flush
+      end
     end
 
     # *Asynchronous* Opens the corpus given as +path+. To open the default
@@ -245,7 +258,6 @@ protected
     # * +handler+ the handler of the assynchronous message.
     #   It is ignored when the mode is set to :sync.
     def talk(msg, mode = :sync, &handler)
-      logger.puts msg if @debug
       if mode == :sync
         @connector.send_message(msg, mode, &handler)
       else
@@ -387,7 +399,7 @@ protected
     def do_wait
       loop {
         break unless should_wait?
-        logger.puts "WAITING" if @debug
+        debug("WAITING")
         sleep 0.1
       }
       @answer_queue.shift
@@ -398,7 +410,7 @@ protected
       @waiting_mutext.synchronize {
         @should_wait = false
       }
-      logger.puts "WAITING stopped" if @debug
+      debug("WAITING stopped")
     end
 
     # Check if the thread should still wait for the answer.
@@ -415,7 +427,7 @@ protected
       @waiting_mutext.synchronize {
         @should_wait = true
       }
-      logger.puts "WAITING started" if @debug
+      debug("WAITING started")
     end
 
     def make_async_query(query,answer_offset)
