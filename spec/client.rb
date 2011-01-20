@@ -48,6 +48,12 @@ describe Poliqarp::Client do
       logger.size.should > 0
     end
 
+    it "should raise error if failed to open corpus" do
+      (proc do 
+        @client.open_corpus("")
+      end).should raise_error(Poliqarp::PoliqarpException)
+    end
+
   end
 
   describe "(with 'sample' corpus)" do
@@ -68,13 +74,13 @@ describe Poliqarp::Client do
     it "should raise error if the size of right context is not number" do
       (proc do
         @client.config.right_context_size = "a"
-      end).should raise_error(RuntimeError)
+      end).should raise_error(Poliqarp::PoliqarpException)
     end
 
     it "should rais error if the size of right context is less or equal 0" do
       (proc do
         @client.config.right_context_size = 0
-      end).should raise_error(RuntimeError)
+      end).should raise_error(Poliqarp::PoliqarpException)
     end
 
     it "should allow to set and get the left context size" do
@@ -85,13 +91,13 @@ describe Poliqarp::Client do
     it "should raise error if the size of left context is not number" do
       (lambda do
         @client.config.left_context_size = "a"
-      end).should raise_error(RuntimeError)
+      end).should raise_error(Poliqarp::PoliqarpException)
     end
 
     it "should rais error if the size of left context is less or equal 0" do
       (lambda do
         @client.config.left_context_size = 0
-      end).should raise_error(RuntimeError)
+      end).should raise_error(Poliqarp::PoliqarpException)
     end
 
     it "should return corpus statistics" do
@@ -171,7 +177,7 @@ describe Poliqarp::Client do
         count = @client.count("nachalny")
         (proc do
           @client.find("nachalny",:index => count+1)
-        end).should raise_error(RuntimeError)
+        end).should raise_error(Poliqarp::PoliqarpException)
       end
 
       it "should raise IndexOutOfBounds error if the index is larger than the buffer size" do

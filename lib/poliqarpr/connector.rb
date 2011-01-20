@@ -88,7 +88,7 @@ module Poliqarp
         when 15
           raise JobInProgress.new()
         else
-          raise RuntimeError.new("Poliqarp Error: "+ERRORS[code])
+          raise PoliqarpException.new("Poliqarp Error: "+ERRORS[code])
         end
       else
         message

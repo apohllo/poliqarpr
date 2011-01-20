@@ -25,7 +25,7 @@ module Poliqarp
         @client.send(:left_context=,value)
         @left_context_size = value
       else
-        raise "Invalid argument: #{value}. It must be fixnum greater than 0."
+        raise PoliqarpException.new("Invalid argument: #{value}. It must be fixnum greater than 0.")
       end
     end
 
@@ -39,7 +39,7 @@ module Poliqarp
         @client.send(:right_context=,value)
         @right_context_size = value
       else
-        raise "Invalid argument: #{value}. It must be fixnum greater than 0."
+        raise PoliqarpException.new("Invalid argument: #{value}. It must be fixnum greater than 0.")
       end
     end
 

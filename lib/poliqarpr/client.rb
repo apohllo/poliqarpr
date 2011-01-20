@@ -90,7 +90,12 @@ module Poliqarp
       if path == :default
         open_corpus(DEFAULT_CORPUS, &handler)
       else
-        talk("OPEN #{path}", :async, &handler)
+        result = talk("OPEN #{path}", :async, &handler)
+        if result == "OPENED"
+          result
+        else
+          raise PoliqarpException.new(result) 
+        end
       end
     end
 
@@ -227,7 +232,7 @@ protected
     def left_context=(value)
       result = talk("SET left-context-width #{value}")
       unless result =~ /^OK/
-        raise "Failed to set left context to #{value}: #{result}"
+        raise PoliqarpException.new("Failed to set left context to #{value}: #{result}")
       end
     end
 
@@ -235,7 +240,7 @@ protected
     def right_context=(value)
       result = talk("SET right-context-width #{value}")
       unless result =~ /^OK/
-        raise "Failed to set right context to #{value}: #{result}"
+        raise PoliqarpException.new("Failed to set right context to #{value}: #{result}")
       end
     end
 
