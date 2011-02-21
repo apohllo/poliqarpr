@@ -94,7 +94,7 @@ module Poliqarp
         if result == "OPENED"
           result
         else
-          raise PoliqarpException.new(result) 
+          raise PoliqarpException.new(result)
         end
       end
     end
@@ -318,6 +318,10 @@ protected
     # * +index+ the index of the answer to be retrieved
     def find_one(query,index)
       make_async_query(query,index)
+      loop do
+        break unless should_wait?
+        sleep 0.01
+      end
       talk("GET-RESULTS #{index} #{index}")
       fetch_result(index,query)
     end
