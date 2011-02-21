@@ -1,3 +1,6 @@
+0.1.6
+- fix fetching of specific result
+
 0.1.5
 - Raises exception if failed to open corpus
 - New PoliqarpException class as a base for all Poliqarp exception
