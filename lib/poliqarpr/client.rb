@@ -39,7 +39,7 @@ module Poliqarp
     # A hint about installation of default corpus gem
     def self.const_missing(const)
       if const.to_s =~ /DEFAULT_CORPUS/
-        raise "You need to install 'apohllo-poliqarpr-corpus' to use the default corpus"
+        raise "You need to install gem 'poliqarpr-corpus' to use the default corpus"
       end
       super
     end
@@ -450,6 +450,8 @@ protected
         result_count = talk("BUFFER-STATE").split(" ")[2].to_i
         break unless should_wait?
       end while result_count < answer_offset
+      # force stop waiting if the result offset is reached before the query has finished
+      stop_waiting
       @last_result = "OK #{result_count}"
       result_count
     end
