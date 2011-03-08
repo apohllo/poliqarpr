@@ -443,7 +443,10 @@ protected
       raise IndexOutOfBounds.new(answer_offset) if answer_offset > config.buffer_size
       start_waiting
       # we access the result count through BUFFER-STATE call
-      make_query(query){|msg| stop_waiting}
+      make_query(query) do |msg|
+        debug{"XXX #{msg}"}
+        stop_waiting
+      end
       result_count = 0
       begin
         # the result count might be not exact!
