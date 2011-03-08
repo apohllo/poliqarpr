@@ -1,3 +1,7 @@
+0.1.8
+- fix subsequent single result queries
+- always cancel previous job before starting a new one
+
 0.1.7
 - speed up querying of specific results
 
