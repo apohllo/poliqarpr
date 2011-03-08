@@ -28,7 +28,8 @@ module Poliqarp
       @connector = Connector.new(self)
       @config = Config.new(self,500000)
       @answer_queue = Queue.new
-      @waiting_mutext = Mutex.new
+      @waiting_mutex = Mutex.new
+      @query_mutex = Mutex.new
       new_session
       config.left_context_size = 5
       config.right_context_size = 5
@@ -392,12 +393,13 @@ protected
           talk("CANCEL") rescue nil
           talk("MAKE-QUERY #{query}")
         end
+        run_query
         result = talk("RUN-QUERY #{config.buffer_size}", :async, &handler)
         if handler.nil?
           @last_result = result
         end
       else
-        stop_waiting
+        stop_waiting if query_done?
       end
       @last_result
     end
@@ -416,7 +418,7 @@ protected
 
     # Stop waiting for the ansynchonous answer.
     def stop_waiting
-      @waiting_mutext.synchronize {
+      @waiting_mutex.synchronize {
         @should_wait = false
       }
       debug("WAITING stopped")
@@ -425,7 +427,7 @@ protected
     # Check if the thread should still wait for the answer.
     def should_wait?
       should_wait = nil
-      @waiting_mutext.synchronize {
+      @waiting_mutex.synchronize {
         should_wait = @should_wait
       }
       should_wait
@@ -433,10 +435,32 @@ protected
 
     # Start waiting for the answer.
     def start_waiting
-      @waiting_mutext.synchronize {
+      @waiting_mutex.synchronize {
         @should_wait = true
       }
       debug("WAITING started")
+    end
+
+    def run_query
+      @query_mutex.synchronize {
+        @query_done = false
+      }
+      debug("QUERY started")
+    end
+
+    def query_done?
+      done = nil
+      @query_mutex.synchronize {
+        done = @query_done
+      }
+      done
+    end
+
+    def finish_query
+      @query_mutex.synchronize {
+        @query_done = true
+      }
+      debug("QUERY finished")
     end
 
     def make_async_query(query,answer_offset)
@@ -444,7 +468,10 @@ protected
       start_waiting
       # we access the result count through BUFFER-STATE call
       make_query(query) do |msg|
-        stop_waiting if msg =~ /QUERY-DONE/
+        if msg =~ /QUERY-DONE/
+          stop_waiting
+          finish_query
+        end
       end
       result_count = 0
       begin
