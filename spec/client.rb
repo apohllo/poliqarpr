@@ -30,7 +30,7 @@ describe Poliqarp::Client do
 
     it "should work with debug turned on" do
       @client.debug = true
-      (proc do 
+      (proc do
         @client.ping
       end).should_not raise_error(Exception)
     end
@@ -49,7 +49,7 @@ describe Poliqarp::Client do
     end
 
     it "should raise error if failed to open corpus" do
-      (proc do 
+      (proc do
         @client.open_corpus("")
       end).should raise_error(Poliqarp::PoliqarpException)
     end
@@ -186,6 +186,18 @@ describe Poliqarp::Client do
           @client.find("nachalny",:index => 2)
         end).should raise_error(Poliqarp::IndexOutOfBounds)
       end
+
+      it "should work for examples with distant index" do
+        @client.config.buffer_size = 10000
+        @client.find("i",:index => 100)
+      end
+
+      it "should work for subseqent examples with distant indices" do
+        @client.config.buffer_size = 10001
+        @client.find("a",:index => 1)
+        @client.find("a",:index => 10000)
+      end
+
     end
 
     describe("(with lemmata flags set to true)") do
