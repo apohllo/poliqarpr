@@ -444,8 +444,7 @@ protected
       start_waiting
       # we access the result count through BUFFER-STATE call
       make_query(query) do |msg|
-        debug{"XXX #{msg}"}
-        stop_waiting
+        stop_waiting if msg =~ /QUERY-DONE/
       end
       result_count = 0
       begin
