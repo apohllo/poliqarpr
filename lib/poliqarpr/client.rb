@@ -381,24 +381,33 @@ protected
 
     # *Asynchronous* Sends the query to the server
     # * +query+ query to send
+    # * +should_wait+ flag indicating that before sending the
+    #   query to the server, the receiver should start wating
+    #   (i.e. the call is async).
     # * +handler+ if given, the method returns immediately,
     #   and the answer is sent to the handler. In this case
     #   the result returned by make_query should be IGNORED!
-    def make_query(query, &handler)
+    def make_query(query, should_wait=false,&handler)
       if @last_query != query
-        @last_query = query
-        begin
-          talk("MAKE-QUERY #{query}")
-        rescue JobInProgress
-          talk("CANCEL") rescue nil
-          talk("MAKE-QUERY #{query}")
+        if @last_query != nil
+          begin
+            talk("CANCEL")
+            stop_waiting
+            finish_query
+          rescue InvalidJobId
+            # this is ok - there might be no job running
+          end
         end
+        @last_query = query
+        talk("MAKE-QUERY #{query}")
+        start_waiting if should_wait
         run_query
         result = talk("RUN-QUERY #{config.buffer_size}", :async, &handler)
         if handler.nil?
           @last_result = result
         end
       else
+        start_waiting if should_wait
         stop_waiting if query_done?
       end
       @last_result
@@ -465,9 +474,8 @@ protected
 
     def make_async_query(query,answer_offset)
       raise IndexOutOfBounds.new(answer_offset) if answer_offset >= config.buffer_size
-      start_waiting
       # we access the result count through BUFFER-STATE call
-      make_query(query) do |msg|
+      make_query(query,true) do |msg|
         if msg =~ /QUERY-DONE/
           stop_waiting
           finish_query
