@@ -452,7 +452,7 @@ protected
         # the result count might be not exact!
         result_count = talk("BUFFER-STATE").split(" ")[2].to_i
         break unless should_wait?
-      end while result_count < answer_offset
+      end while result_count <= answer_offset
       # force stop waiting if the result offset is reached before the query has finished
       stop_waiting
       @last_result = "OK #{result_count}"
