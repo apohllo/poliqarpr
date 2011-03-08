@@ -85,6 +85,8 @@ module Poliqarp
       if message =~ /^ERR/
         code = message.match(/\d+/)[0].to_i
         case code
+        when 14
+          raise InvalidJobId.new()
         when 15
           raise JobInProgress.new()
         else
