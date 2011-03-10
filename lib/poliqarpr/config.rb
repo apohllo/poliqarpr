@@ -8,11 +8,18 @@ module Poliqarp
     GROUPS = [:left_context, :left_match, :right_match, :right_context]
     # The size of the buffer is the maximum number of excerpts which
     # are returned for single query.
-    attr_accessor :buffer_size, :left_context_size, :right_context_size, :tags, :lemmata
+    attr_reader :buffer_size
+    attr_accessor :left_context_size, :right_context_size, :tags, :lemmata
 
     def initialize(client,buffer_size)
       @client = client
       @buffer_size = buffer_size
+    end
+
+    # Sets the result buffer size.
+    def buffer_size=(size)
+      @buffer_size = size
+      @client.send(:resize_buffer,size)
     end
 
     # Sets the size of the left short context. It must be > 0

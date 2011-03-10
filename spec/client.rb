@@ -66,6 +66,11 @@ describe Poliqarp::Client do
       @client.close
     end
 
+    xit "should resize the result buffer" do
+      # this test should check if the buffer is really resized
+      @client.config.buffer_size = 100
+    end
+
     it "should allow to set and get the right context size" do
       @client.config.right_context_size = 5
       @client.config.right_context_size.should == 5

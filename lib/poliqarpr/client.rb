@@ -54,7 +54,7 @@ module Poliqarp
       close if @session
       @connector.open("localhost",port)
       talk("MAKE-SESSION #{@session_name}")
-      talk("BUFFER-RESIZE #{config.buffer_size}")
+      resize_buffer(config.buffer_size)
       @session = true
     end
 
@@ -228,7 +228,13 @@ module Poliqarp
       result
     end
 
-protected
+    protected
+
+    # Resizes the result buffer.
+    def resize_buffer(size)
+      talk("BUFFER-RESIZE #{size}")
+    end
+
     # Set the size of the left context.
     def left_context=(value)
       result = talk("SET left-context-width #{value}")
