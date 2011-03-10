@@ -1,3 +1,7 @@
+0.1.9
+- Change the default buffer size to 5000
+- Fix buffer resize
+
 0.1.8
 - fix subsequent single result queries
 - always cancel previous job before starting a new one
