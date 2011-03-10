@@ -26,7 +26,7 @@ module Poliqarp
       @debug = debug
       @logger = STDOUT
       @connector = Connector.new(self)
-      @config = Config.new(self,500000)
+      @config = Config.new(self,5000)
       @answer_queue = Queue.new
       @waiting_mutex = Mutex.new
       @query_mutex = Mutex.new
