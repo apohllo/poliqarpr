@@ -394,7 +394,7 @@ module Poliqarp
     #   and the answer is sent to the handler. In this case
     #   the result returned by make_query should be IGNORED!
     def make_query(query, should_wait=false,&handler)
-      if @last_query != query
+      if @last_query != query || @last_buffer_size != config.buffer_size
         if @last_query != nil
           begin
             talk("CANCEL")
@@ -404,8 +404,11 @@ module Poliqarp
             # this is ok - there might be no job running
           end
         end
+        if @last_query != query
+          talk("MAKE-QUERY #{query}")
+        end
         @last_query = query
-        talk("MAKE-QUERY #{query}")
+        @last_buffer_size = config.buffer_size
         start_waiting if should_wait
         run_query
         result = talk("RUN-QUERY #{config.buffer_size}", :async, &handler)

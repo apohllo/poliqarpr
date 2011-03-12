@@ -72,6 +72,13 @@ describe Poliqarp::Client do
       @client.find("a").size.should == 5010
     end
 
+    it "should run a new query if the buffer was resized, even if the last query is the same" do
+      @client.config.buffer_size = 100
+      @client.find("a",:index => 1)
+      @client.config.buffer_size = 200
+      @client.find("a", :index => 150)
+    end
+
     it "should allow to set and get the right context size" do
       @client.config.right_context_size = 5
       @client.config.right_context_size.should == 5
