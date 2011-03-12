@@ -1,3 +1,6 @@
+0.1.10
+- Fix same single-result queries with different buffer size
+
 0.1.9
 - Change the default buffer size to 5000
 - Fix buffer resize
